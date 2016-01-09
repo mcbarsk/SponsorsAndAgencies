@@ -1,8 +1,6 @@
 package dk.ms.writer;
 import java.util.ArrayList;
 
-import java.sql.Connection;
-
 import dk.ms.SponsorsAndAgencies.Agency;
 import dk.ms.SponsorsAndAgencies.Sponsor;
 

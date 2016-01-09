@@ -12,7 +12,6 @@ import dk.ms.SponsorsAndAgencies.Agency;
 import dk.ms.SponsorsAndAgencies.Sponsor;
 import dk.ms.writer.SponsorsAndAgenciesWriter;
 
-
 /**
  * @author Mark
  *

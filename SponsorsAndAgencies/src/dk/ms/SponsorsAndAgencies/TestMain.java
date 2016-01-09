@@ -1,8 +1,5 @@
 package dk.ms.SponsorsAndAgencies;
 
-import java.sql.Timestamp;
-import java.util.ArrayList;
-
 public class TestMain {
 
 	public static void main(String[] args) {
@@ -34,7 +31,7 @@ public class TestMain {
 //		world.spendBudget();
 //		world.writeAgencies();
 //		world.removeExhaustedAgencies();
-//		world.generateNewAgencies();
+//		world.generateNewAgencies(); 
 		world.orchestrateWorld();
 	}
 

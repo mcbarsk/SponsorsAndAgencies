@@ -9,7 +9,7 @@ import java.text.NumberFormat;
 
 import dk.ms.SponsorsAndAgencies.Utilities;
 import dk.ms.writer.*;
-
+    
 
 public class World {
 	private String 				worldID;
