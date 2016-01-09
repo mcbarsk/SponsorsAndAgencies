@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ClassDiagram>
+    <Class name="dk.ms.SponsorsAndAgencies.Agency" x="38" y="180">
+        <AttributesDisplayFilter public-accepted="true"
+            private-accepted="true" protected-accepted="true"
+            default-accepted="true" static-accepted="false"/>
+        <MethodDisplayFilter public-accepted="true"
+            private-accepted="false" protected-accepted="false"
+            default-accepted="false" static-accepted="false"
+            accessors-accepted="false" constructors-accepted="false"/>
+        <Association
+            destinationClassName="dk.ms.SponsorsAndAgencies.Sponsor"
+            endpointName="possibleSponsors" kind="Simple">
+            <Point x="380" y="448"/>
+            <Point x="534" y="448"/>
+        </Association>
+        <Association
+            destinationClassName="dk.ms.SponsorsAndAgencies.Sponsor"
+            endpointName="chosenSponsor" kind="Simple">
+            <Point x="117" y="115"/>
+            <Point x="328" y="115"/>
+            <Point x="530" y="115"/>
+        </Association>
+    </Class>
+    <Class name="dk.ms.SponsorsAndAgencies.Sponsor" x="481" y="254">
+        <AttributesDisplayFilter public-accepted="true"
+            private-accepted="true" protected-accepted="true"
+            default-accepted="true" static-accepted="false"/>
+        <MethodDisplayFilter public-accepted="true"
+            private-accepted="false" protected-accepted="false"
+            default-accepted="false" static-accepted="false"
+            accessors-accepted="false" constructors-accepted="false"/>
+        <Association
+            destinationClassName="dk.ms.SponsorsAndAgencies.Agency"
+            endpointName="LAgency" kind="Simple"/>
+    </Class>
+    <Class name="dk.ms.SponsorsAndAgencies.World" x="247" y="2">
+        <AttributesDisplayFilter public-accepted="true"
+            private-accepted="true" protected-accepted="true"
+            default-accepted="true" static-accepted="false"/>
+        <MethodDisplayFilter public-accepted="true"
+            private-accepted="false" protected-accepted="false"
+            default-accepted="false" static-accepted="false"
+            accessors-accepted="false" constructors-accepted="false"/>
+        <Association
+            destinationClassName="dk.ms.SponsorsAndAgencies.Agency"
+            endpointName="LAgencies" kind="Simple">
+            <Point x="315" y="148"/>
+        </Association>
+        <Association
+            destinationClassName="dk.ms.SponsorsAndAgencies.Sponsor"
+            endpointName="LSponsors" kind="Simple">
+            <Point x="323" y="147"/>
+        </Association>
+    </Class>
+</ClassDiagram>
