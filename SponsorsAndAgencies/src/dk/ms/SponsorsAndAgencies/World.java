@@ -9,7 +9,7 @@ import java.text.NumberFormat;
 
 import dk.ms.SponsorsAndAgencies.Utilities;
 import dk.ms.writer.*;
-    
+
 
 public class World {
 	private String 				worldID;
@@ -83,7 +83,7 @@ public class World {
 		this.writeMethod				= writeMethod;
 		switch (writeMethod){
 		case TO_DATABASE:
-			writer = new WriterSQL(numberOfIterations /2);
+			writer = new WriterSQL();
 			break;
 		case TO_FILE:
 			break;
@@ -226,7 +226,7 @@ public class World {
 		//setend();
 		//log(start,end,"step7)");
 	} // generateNewAgencies
-	
+
 	public void setBudgetRequirements(){ // Step 8
 		/* New budgets are allocated.
 		 * These are allocated with the algorithm: current_budget *gauss(MU,SIGMA) where MU = 1 and SIGMA = 0.02, hence the constants.
@@ -250,7 +250,7 @@ public class World {
 
 	public void orchestrateWorld(){
 		/* This method arranges all the steps and iterates.
-		*/
+		 */
 		setstart();
 		initialise();
 		for (int i=1;i<=numberOfIterations;i++){
@@ -268,24 +268,19 @@ public class World {
 		log(start,end,"iteration:" + numberOfIterations);
 	}
 	public void write(int iteration){
-		//setstart();
-		String conurl= "jdbc:mysql://localhost:3306/sponsors_agencies";
-		// TODO catch any SQL errors and decide what to do.
-		writer.connect(conurl);
+		writer.prepare();
 		writer.writeData(LAgencies,LSponsors, iteration);
-		//setend();
-		//log(start,end,"iteration:" + iteration);
-
-	}
+	} // write
 
 	public void move(){
 		Moving.move(moveSetting, LAgencies, LSponsors);
 	} // move
 	//  private utility methods
 	private void log(long start, long end, String s){ // for debugging purposes
-		
+
 		System.out.println("Execution time is " + formatter.format((end - start) /1000d) + " seconds - " + s);
-	}
+	}// move
+
 	private int returnClosestSponsorIndex(Agency agency){
 		int returnValue = -1;
 		double minDistance = 99999;
@@ -318,7 +313,7 @@ public class World {
 			}
 		}
 		return returnValue;
-	}
+	}// returnClosestSponsorIndexHighestValue
 
 	private void resetCutDown(){
 		for (int i=0;i<LAgencies.size();i++){
@@ -334,7 +329,7 @@ public class World {
 			Agency agencylocal;
 			agencylocal = sponsor.getAgencies().get(i);
 			if (agency == null || agency != agencylocal) // avoid adding input agency budget.
-			returnValue += agencylocal.getBudget();
+				returnValue += agencylocal.getBudget();
 		}
 		return returnValue;
 	}

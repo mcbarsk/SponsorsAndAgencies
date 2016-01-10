@@ -40,7 +40,6 @@ public class Sponsor implements Cloneable{
 		catch (Exception e){
 			return null;
 		}
-		
 	}
 	
 	// simple getters	
