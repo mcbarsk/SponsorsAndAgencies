@@ -9,6 +9,7 @@ import dk.ms.SponsorsAndAgencies.Sponsor;
 public abstract class SponsorsAndAgenciesWriter {
 		abstract public void setup() throws Exception;
 		abstract public void writeData(ArrayList<Agency> agency, ArrayList<Sponsor> sponsor, int iteration);
+		abstract public void writeData1(ArrayList<Agency> agency, ArrayList<Sponsor> sponsor, int iteration);
 		abstract public void connect(String a);
 			
 		

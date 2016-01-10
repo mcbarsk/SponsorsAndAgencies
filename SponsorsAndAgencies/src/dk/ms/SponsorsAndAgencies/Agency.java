@@ -2,7 +2,7 @@ package dk.ms.SponsorsAndAgencies;
 import java.sql.Timestamp;
 import java.util.*;
 import java.lang.Math;
-public class Agency {
+public class Agency implements Cloneable{
 
 
 	private String   	worldID; // which world does this agency belong to?
@@ -31,7 +31,13 @@ public class Agency {
 		this.eyesight 			= eyesight;
 	} // Constructor
 
-
+	public Object clone(){
+		try {
+			return super.clone();
+		} catch (CloneNotSupportedException e) {
+			return null;
+		}
+	}
 	// Simple getters
 	public Sponsor getSponsor(){return chosenSponsor;}
 

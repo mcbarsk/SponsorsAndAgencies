@@ -6,7 +6,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 
 
-public class Sponsor {
+public class Sponsor implements Cloneable{
 	// attributes	
 	private String		worldID;
 	private Timestamp creationDate;
@@ -32,7 +32,17 @@ public class Sponsor {
 		this.money 			= util.gaussian(mu, sigma); // based on initial money set up in master.
 		LAgency 			= new ArrayList<Agency>();
 	}
-
+	
+	public Object clone(){
+		try {
+			return super.clone();
+		}
+		catch (Exception e){
+			return null;
+		}
+		
+	}
+	
 	// simple getters	
 	public int getName() {return name;}
 

@@ -83,7 +83,7 @@ public class World {
 		this.writeMethod				= writeMethod;
 		switch (writeMethod){
 		case TO_DATABASE:
-			writer = new WriterSQL();
+			writer = new WriterSQL(numberOfIterations /2);
 			break;
 		case TO_FILE:
 			break;
@@ -251,6 +251,7 @@ public class World {
 	public void orchestrateWorld(){
 		/* This method arranges all the steps and iterates.
 		*/
+		setstart();
 		initialise();
 		for (int i=1;i<=numberOfIterations;i++){
 			seekPotentialSponsors();
@@ -263,15 +264,17 @@ public class World {
 			setBudgetRequirements();
 			move();
 		}
+		setend();
+		log(start,end,"iteration:" + numberOfIterations);
 	}
 	public void write(int iteration){
-		setstart();
+		//setstart();
 		String conurl= "jdbc:mysql://localhost:3306/sponsors_agencies";
 		// TODO catch any SQL errors and decide what to do.
 		writer.connect(conurl);
 		writer.writeData(LAgencies,LSponsors, iteration);
-		setend();
-		log(start,end,"SQL");
+		//setend();
+		//log(start,end,"iteration:" + iteration);
 
 	}
 

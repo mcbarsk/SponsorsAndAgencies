@@ -4,7 +4,7 @@ public class TestMain {
 
 	public static void main(String[] args) {
 		
-		int numberOfIterations			= 1000;
+		int numberOfIterations			= 50;
 		int initialNumberOfSponsors 	= 50;
 		int initialNumberOfAgencies 	= 100;
 		MoveSetting ms 					= MoveSetting.MOVE_AT_RANDOM;
