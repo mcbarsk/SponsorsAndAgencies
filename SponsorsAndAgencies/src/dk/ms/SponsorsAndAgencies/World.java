@@ -18,22 +18,23 @@ public class World {
 	private int 				initialNumberOfAgencies;
 	private MoveSetting 		moveSetting;
 	private CutDownModel		cutDownModel;
-	private int[] 				worldSize = new int[2];
+	private int[] 				worldSize = new int[] {5,5};
 	private ArrayList<Agency> 	LAgencies;
 	private ArrayList<Sponsor> 	LSponsors;
 	private Utilities	        sponsorUtilities; 
 	private Utilities			agencyUtilities;	
-	private double				sponsorSigmaFactor; 
-	private double				sponsorMoney;
-	private double 				agencyMoney;
-	private int					agencyMoneyReserveFactor;
-	private double				agencySigmaFactor;
-	private double				agencyRequirementNeed;
-	private double				agencyRequirementSigma;
-	private double				sightOfAgency;
-	private boolean				pickRandomSponsor;
-	private int					numberOfIterations;
-	private int					totalNumberOfAgencies = 0; // singleton to ensure new agencies get a unique number
+	private double				sponsorSigmaFactor 			=  6; 
+	private double				sponsorMoney				= 10;
+	private double 				agencyMoney					= 50;
+	private int					agencyMoneyReserveFactor	=  5;
+	private double				agencySigmaFactor         	=  6;
+	private double				agencyRequirementNeed		= 0.92;
+	private double				agencyRequirementSigma		= 0.2;
+	private double				sightOfAgency				= 2;
+	private double 				moveRate					= 0.5;
+	private boolean				pickRandomSponsor			= false;
+	private int					numberOfIterations			= 1000;
+	private int					totalNumberOfAgencies 		= 0; // singleton to ensure new agencies get a unique number
 	private WriteMethod			writeMethod;
 	private SponsorsAndAgenciesWriter	writer;				
 	private NumberFormat		formatter = new DecimalFormat("#0.00000");
@@ -55,9 +56,24 @@ public class World {
 			double agencyRequirementSigma,
 			double sightOfAgency,
 			boolean pickRandomSponsor,
-			WriteMethod writeMethod
+			WriteMethod writeMethod,
+			double moveRate
 			){
-
+		// Validation
+		if(numberOfIterations < 1)
+			throw new IllegalArgumentException("Number of iterations must be > 0");
+		if(moveRate > 1 || moveRate < 0)
+			throw new IllegalArgumentException("MoveRate must be in the range [0..1]");
+		if(initialNumberOfSponsors < 1)
+			throw new IllegalArgumentException("Number of sponsors must be > 0");
+		if(initialNumberOfAgencies < 1)
+			throw new IllegalArgumentException("Number of agencies must be > 0");
+		if (movesetting == null)
+			throw new IllegalArgumentException("Specify a movesetting");
+		// End of validation
+		if (cutDownModel == null)
+			throw new IllegalArgumentException("Specify a cut down model");
+		
 		LAgencies 						= new ArrayList<Agency>(); // container for agencies
 		LSponsors 						= new ArrayList<Sponsor>(); // container for sponsors
 		worldID 						= String.valueOf(UUID.randomUUID()); // generates a unique ID for the world
@@ -80,6 +96,7 @@ public class World {
 		this.agencyRequirementSigma		= agencyRequirementSigma;   // for setting real requirements
 		this.sightOfAgency				= sightOfAgency;
 		this.pickRandomSponsor			= pickRandomSponsor;
+		this.moveRate					= moveRate;
 		this.writeMethod				= writeMethod;
 		switch (writeMethod){
 		case TO_DATABASE:
@@ -92,7 +109,7 @@ public class World {
 
 
 	}; // World
-
+	
 	public void initialise(){	// Step 1
 		//setstart();
 		// Create Sponsors
@@ -273,7 +290,7 @@ public class World {
 	} // write
 
 	public void move(){
-		Moving.move(moveSetting, LAgencies, LSponsors);
+		Moving.move(moveSetting, LAgencies, LSponsors, moveRate);
 	} // move
 	//  private utility methods
 	private void log(long start, long end, String s){ // for debugging purposes
@@ -340,10 +357,10 @@ public class World {
 	 * 	
 	 */
 	static final class Moving { // private class for performing movement.
-		private static void move(MoveSetting ms, ArrayList<Agency> LAgencies, ArrayList<Sponsor> LSponsors){
+		private static void move(MoveSetting ms, ArrayList<Agency> LAgencies, ArrayList<Sponsor> LSponsors, double moveRate){
 			switch (ms){
 			case CLOSER_TO_SPONSOR:
-				moveCloserToSponsor(LAgencies, LSponsors);
+				moveCloserToSponsor(LAgencies, LSponsors, moveRate);
 				break;
 			case MOVE_AT_RANDOM:
 				moveAtRandom(LAgencies, LSponsors);
@@ -354,9 +371,21 @@ public class World {
 			case NO_MOVEMENT:
 			};
 		}	
-		private static void moveCloserToSponsor(ArrayList<Agency> Agencies, ArrayList<Sponsor> Sponsors){
-
+		private static void moveCloserToSponsor(ArrayList<Agency> Agencies, ArrayList<Sponsor> Sponsors, double moveRate){
+			int agencySize = Agencies.size();
+			for (int i=0;i<agencySize;i++){
+				Agency agency = Agencies.get(i);
+				Sponsor sponsor = agency.getSponsor(); 
+				if (sponsor != null){
+					double[] agencyPos  = agency.getPosition();
+					double[] sponsorPos = sponsor.getPosition();
+					double x = agencyPos[0] + ((sponsorPos[0] - agencyPos[0]) * moveRate);
+					double y = agencyPos[1] + ((sponsorPos[1] - agencyPos[1])  * moveRate);
+					agency.setPosition(x,y);
+				}
+			}
 		} // moveCloserToSponsor
+
 		private static void moveAtRandom(ArrayList<Agency> Agencies, ArrayList<Sponsor> Sponsors){
 
 		} // moveAtRandom
