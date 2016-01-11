@@ -10,6 +10,7 @@ import java.util.ArrayList;
 
 import dk.ms.SponsorsAndAgencies.Agency;
 import dk.ms.SponsorsAndAgencies.Sponsor;
+import dk.ms.SponsorsAndAgencies.World;
 import dk.ms.writer.SponsorsAndAgenciesWriter;
 
 /**
@@ -31,7 +32,7 @@ public class WriterSQL extends SponsorsAndAgenciesWriter{
 			"position_x,position_y,money,payoff," + 
 			"iteration)" + 
 			"VALUES(?,?,?,?,?,?,?,?)";
-	private static String CONNURL = "jdbc:mysql://localhost:3306/sponsors_agencies"  + "?useSSL=false"; 
+	private String ConnURL; 
 	Connection conn = null;
 	PreparedStatement stmt = null;
 	ResultSet rs = null;
@@ -39,7 +40,8 @@ public class WriterSQL extends SponsorsAndAgenciesWriter{
 
 	public void setup(){
 	}
-
+	
+	@Override
 	public void writeData(ArrayList<Agency> lagency, ArrayList<Sponsor> lsponsor, int iteration){
 		try{
 			writeAgency(lagency, iteration);
@@ -60,16 +62,15 @@ public class WriterSQL extends SponsorsAndAgenciesWriter{
 
 
 
-
-	public void prepare(){
+	@Override
+	public void prepare(World world){
+		ConnURL = world.getConnectionUrl();
 		try {
 			//		new com.mysql.jdbc.Driver();
 			Class.forName("com.mysql.jdbc.Driver").newInstance();
-			//conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/testdatabase?user=testuser&password=testpassword");
-			//String connectionUrl = "jdbc:mysql://localhost:3306/testdatabase";
 			String connectionUser = "root";
 			String connectionPassword = "1064"; //"?Hard2type!";
-			conn = DriverManager.getConnection(CONNURL, connectionUser, connectionPassword);
+			conn = DriverManager.getConnection(ConnURL, connectionUser, connectionPassword);
 			conn.setAutoCommit(false);
 
 

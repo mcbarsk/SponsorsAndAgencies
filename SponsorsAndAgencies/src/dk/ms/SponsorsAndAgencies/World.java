@@ -40,6 +40,7 @@ public class World {
 	private NumberFormat		formatter = new DecimalFormat("#0.00000");
 	private long 				start;
 	private long				end;
+	private Settings			settings; 
 
 	public World(int numberOfIterations,
 			int initialNumberOfSponsors, 
@@ -105,6 +106,7 @@ public class World {
 		case TO_FILE:
 			break;
 		}
+		settings 						= new Settings();
 
 
 
@@ -174,7 +176,6 @@ public class World {
 						agency.getSponsor().removeAgency(agency); // clean up old sponsor
 					}
 					agency.setSponsor(sponsor);
-					agency.setCutDown(false); 
 					sponsor.addAgency(agency);
 				};
 			}
@@ -285,7 +286,7 @@ public class World {
 		log(start,end,"iteration:" + numberOfIterations);
 	}
 	public void write(int iteration){
-		writer.prepare();
+		writer.prepare(this);
 		writer.writeData(LAgencies,LSponsors, iteration);
 	} // write
 
@@ -350,7 +351,11 @@ public class World {
 		}
 		return returnValue;
 	}
-
+/*
+ * Small getters to retrieve some world specific settings, embedded in the private class: Settings. 
+ */
+	public String getConnectionUrl(){return settings.connectionUrl;	}
+	public String getPath(){return settings.saveLocation;};
 	/* 
 	 * Following is a set of private classes which helps make different types of calculation. 
 	 * If new enum values are created, this is the place to implement the corresponding code.
@@ -478,5 +483,10 @@ public class World {
 			}	
 		} // calculatePercentage
 	} // class Payout
+	
+	private static class Settings{
+		private String connectionUrl = "jdbc:mysql://localhost:3306/sponsors_agencies"  + "?useSSL=false";
+		private String saveLocation = "C:\\";
+	}
 
 } // Class World
