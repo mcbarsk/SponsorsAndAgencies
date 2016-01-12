@@ -111,6 +111,8 @@ public class World {
 
 
 	}; // World
+
+	@Override public String toString(){return "worldID:" + worldID ;}
 	
 	public void initialise(){	// Step 1
 		//setstart();
