@@ -4,8 +4,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.lang.RuntimeException.*;
-
 import dk.ms.SponsorsAndAgencies.Agency;
 import dk.ms.SponsorsAndAgencies.Sponsor;
 import dk.ms.SponsorsAndAgencies.World;
@@ -18,7 +16,7 @@ public class WriterFile extends SponsorsAndAgenciesWriter{
 	
 
 	@Override
-	public void writeData(ArrayList<Agency> agency, ArrayList<Sponsor> sponsor, int iteration) {
+	public void writeData(World world, ArrayList<Agency> agency, ArrayList<Sponsor> sponsor, int iteration) {
 		// TODO Auto-generated method stub
 		
 	}

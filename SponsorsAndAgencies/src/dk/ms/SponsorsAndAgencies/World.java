@@ -113,7 +113,26 @@ public class World {
 	}; // World
 
 	@Override public String toString(){return "worldID:" + worldID ;}
-	
+	// Simple getters
+	public String getWorldID() {return worldID;}
+	public Timestamp getCreationDate() {return creationDate;}
+	public int getInitialNumberOfSponsors() {return initialNumberOfSponsors;}
+	public int getInitialNumberOfAgencies() {return initialNumberOfAgencies;}
+	public MoveSetting getMoveSetting() {return moveSetting;}
+	public CutDownModel getCutDownModel() {return cutDownModel;}
+	public int[] getWorldSize() {return worldSize;}
+	public double getSponsorSigmaFactor() {return sponsorSigmaFactor;}
+	public double getSponsorMoney() {return sponsorMoney;}
+	public double getAgencyMoney() {return agencyMoney;}
+	public int getAgencyMoneyReserveFactor() {return agencyMoneyReserveFactor;}
+	public double getAgencySigmaFactor() {return agencySigmaFactor;}
+	public double getAgencyRequirementNeed() {return agencyRequirementNeed;}
+	public double getAgencyRequirementSigma() {return agencyRequirementSigma;}
+	public double getSightOfAgency() {return sightOfAgency;}
+	public double getMoveRate() {return moveRate;}
+	public boolean isPickRandomSponsor() {return pickRandomSponsor;}
+	public int getNumberOfIterations() {return numberOfIterations;}
+
 	public void initialise(){	// Step 1
 		//setstart();
 		// Create Sponsors
@@ -288,8 +307,9 @@ public class World {
 		log(start,end,"iteration:" + numberOfIterations);
 	}
 	public void write(int iteration){
-		writer.prepare(this);
-		writer.writeData(LAgencies,LSponsors, iteration);
+		if (iteration == 1) // only prepare for the first iteration
+			writer.prepare(this);
+		writer.writeData(this, LAgencies,LSponsors, iteration);
 	} // write
 
 	public void move(){
@@ -353,11 +373,6 @@ public class World {
 		}
 		return returnValue;
 	}
-/*
- * Small getters to retrieve some world specific settings, embedded in the private class: Settings. 
- */
-	public String getConnectionUrl(){return settings.connectionUrl;	}
-	public String getPath(){return settings.saveLocation;};
 	/* 
 	 * Following is a set of private classes which helps make different types of calculation. 
 	 * If new enum values are created, this is the place to implement the corresponding code.
@@ -489,6 +504,25 @@ public class World {
 	private static class Settings{
 		private String connectionUrl = "jdbc:mysql://localhost:3306/sponsors_agencies"  + "?useSSL=false";
 		private String saveLocation = "C:\\";
-	}
+		private String dbConnector = "com.mysql.jdbc.Driver";
+		private String user = "root";
+		private String pw   = "1064";
+	} // class Settings
+	
+	/*
+	 * Small getters to retrieve some world specific settings, embedded in the private class: Settings. 
+	 */
+		public String getConnectionUrl(){return settings.connectionUrl;	}
+		public String getPath(){return settings.saveLocation;};
+		public String getdbConnector(){return settings.dbConnector;}
+		public String getuser(){return settings.user;}
+		public String getpw(){return settings.pw;} 
+		/* obviously no-one leaves a password hardcoded in the source. 
+		 * Specify password in encrypted config file and read encrypted password into char array (as opposed to the current String)
+		 * So basically read all config settings into user interface (assuming the data has been stored in a file. (and pw in a segregated encrypted file!) 
+		 * (maybe use JPasswordField or PasswordField depending on whether JavaFX is chosen)  
+		 *  Initialise the Setting class with all available config, including pw in char-array instead of current String.
+		 */
+
 
 } // Class World
