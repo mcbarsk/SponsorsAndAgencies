@@ -16,7 +16,6 @@ public class World {
 	private Timestamp           creationDate;
 	private int 				initialNumberOfSponsors;
 	private int 				initialNumberOfAgencies;
-	private MoveSetting 		moveSetting;
 	private CutDownModel		cutDownModel;
 	private int[] 				worldSize = new int[] {5,5};
 	private ArrayList<Agency> 	LAgencies;
@@ -45,7 +44,6 @@ public class World {
 	public World(int numberOfIterations,
 			int initialNumberOfSponsors, 
 			int initialNumberOfAgencies, 
-			MoveSetting movesetting, 
 			CutDownModel cutDownModel,
 			int[] worldSize,
 			double sponsorSigmaFactor,
@@ -69,12 +67,9 @@ public class World {
 			throw new IllegalArgumentException("Number of sponsors must be > 0");
 		if(initialNumberOfAgencies < 1)
 			throw new IllegalArgumentException("Number of agencies must be > 0");
-		if (movesetting == null)
-			throw new IllegalArgumentException("Specify a movesetting");
-		// End of validation
 		if (cutDownModel == null)
 			throw new IllegalArgumentException("Specify a cut down model");
-		
+
 		LAgencies 						= new ArrayList<Agency>(); // container for agencies
 		LSponsors 						= new ArrayList<Sponsor>(); // container for sponsors
 		worldID 						= String.valueOf(UUID.randomUUID()); // generates a unique ID for the world
@@ -84,7 +79,6 @@ public class World {
 		this.initialNumberOfSponsors 	= initialNumberOfSponsors;
 		this.initialNumberOfAgencies 	= initialNumberOfAgencies;
 		this.worldSize 					= worldSize.clone(); // sets internal worldsize
-		this.moveSetting				= movesetting;
 		this.cutDownModel				= cutDownModel;
 		sponsorUtilities				= new Utilities();
 		agencyUtilities					= new Utilities();
@@ -104,6 +98,7 @@ public class World {
 			writer = new WriterSQL();
 			break;
 		case TO_FILE:
+			writer = new WriterFile();
 			break;
 		}
 		settings 						= new Settings();
@@ -118,7 +113,6 @@ public class World {
 	public Timestamp getCreationDate() {return creationDate;}
 	public int getInitialNumberOfSponsors() {return initialNumberOfSponsors;}
 	public int getInitialNumberOfAgencies() {return initialNumberOfAgencies;}
-	public MoveSetting getMoveSetting() {return moveSetting;}
 	public CutDownModel getCutDownModel() {return cutDownModel;}
 	public int[] getWorldSize() {return worldSize;}
 	public double getSponsorSigmaFactor() {return sponsorSigmaFactor;}
@@ -139,15 +133,20 @@ public class World {
 		for (int i = 0; i<initialNumberOfSponsors;i++ ){
 			LSponsors.add(new Sponsor(sponsorUtilities, worldID, creationDate,i,worldSize[0],worldSize[1],sponsorMoney,sponsorSigmaFactor));
 		} // 
-		// Create Agencies
-		for(int i = 0; i<initialNumberOfAgencies;i++){
-			Agency agency;
-			agency = new Agency(agencyUtilities,worldID,creationDate,i,worldSize[0],worldSize[1], agencyMoney,agencyMoney/agencySigmaFactor,sightOfAgency, agencyMoneyReserveFactor);
-			double budget = agency.getBudget();
-			agency.setMoneyNeeded(agencyUtilities, budget * agencyRequirementNeed, budget * agencyRequirementSigma);
-			LAgencies.add(agency);
-			totalNumberOfAgencies += 1;
+		// Create Agencies. Either the initial number is set, or the system calculates the number of agencies.
+		if (initialNumberOfAgencies > 0){
+			for(int i = 0; i<initialNumberOfAgencies;i++){
+				Agency agency;
+				agency = new Agency(agencyUtilities,worldID,creationDate,i,worldSize[0],worldSize[1], agencyMoney,agencyMoney/agencySigmaFactor,sightOfAgency, agencyMoneyReserveFactor);
+				double budget = agency.getBudget();
+				agency.setMoneyNeeded(agencyUtilities, budget * agencyRequirementNeed, budget * agencyRequirementSigma);
+				LAgencies.add(agency);
+				totalNumberOfAgencies += 1;
+			}}
+		else{
+			totalNumberOfAgencies = generateNewAgencies();
 		}
+
 		//setend(); 
 		//log (start, end, "initialise");
 	}; // initialise
@@ -240,10 +239,10 @@ public class World {
 		//log(start,end,"step6");
 	} // removeExhaustedAgencies
 
-	public void generateNewAgencies(){ // Step 7
+	public int generateNewAgencies(){ // Step 7
 		//setstart();
 		double totalSponsorMoney = 0;
-		double totalAgencyRequirement = 0;
+		double totalAgencyRequirement = this.agencyMoney; // initiated like this, if no agencies initially have been specified. 
 		int i;
 		for (i=0; i<LSponsors.size();i++){
 			totalSponsorMoney += LSponsors.get(i).getMoney();
@@ -262,6 +261,7 @@ public class World {
 			LAgencies.add(agency);
 
 		}
+		return newAgencies;
 		//setend();
 		//log(start,end,"step7)");
 	} // generateNewAgencies
@@ -313,7 +313,7 @@ public class World {
 	} // write
 
 	public void move(){
-		Moving.move(moveSetting, LAgencies, LSponsors, moveRate);
+		moveCloserToSponsor(LAgencies, LSponsors, moveRate);
 	} // move
 	//  private utility methods
 	private void log(long start, long end, String s){ // for debugging purposes
@@ -373,48 +373,93 @@ public class World {
 		}
 		return returnValue;
 	}
+	private double smallest (double x, double y){
+		return (Double.compare(x, y) > 0 ? y : x); 
+	}
+	private void moveCloserToSponsor(ArrayList<Agency> Agencies, ArrayList<Sponsor> Sponsors, double moveRate){
+		int agencySize = Agencies.size();
+		for (int i=0;i<agencySize;i++){
+			Agency agency = Agencies.get(i);
+			Sponsor sponsor = agency.getSponsor(); 
+			if (sponsor != null){
+				double dist = distance(sponsor,agency);
+				if (moveRate > distance(sponsor, agency) && dist > 0){
+					agency.setPosition(sponsor.getPosition()[0], sponsor.getPosition()[1]);
+				}
+				else{
+					double[] agencyPos  = agency.getPosition();
+					double[] sponsorPos = sponsor.getPosition();
+					//sinus and cosinus is utilised for finding distances depending on how the imaginary triangle turns if agency and sponsor specifies 
+					// the points opposing the catheti.
+					// the formula is sinA = a/c and cosA = b/c
+					// I did not manage to find a more trivial way to calculate this.
+					// 
+					int sw = 0; 
+					if (Double.compare(agencyPos[0], sponsorPos[0]) > 0 && Double.compare(agencyPos[1], sponsorPos[1]) < 0 ){sw=1;} // error
+					if (Double.compare(agencyPos[0], sponsorPos[0]) > 0 && Double.compare(agencyPos[1], sponsorPos[1]) > 0 ){sw=2;}
+					if (Double.compare(agencyPos[0], sponsorPos[0]) < 0 && Double.compare(agencyPos[1], sponsorPos[1]) < 0 ){sw=3;}
+					if (Double.compare(agencyPos[0], sponsorPos[0]) < 0 && Double.compare(agencyPos[1], sponsorPos[1]) > 0 ){sw=4;}
+					if (Double.compare(agencyPos[0], sponsorPos[0]) == 0){sw=5;}
+					if (Double.compare(agencyPos[1], sponsorPos[1]) == 0){sw=6;}
+					double sinA;
+					double angle;
+					double xDelta = 0;
+					double yDelta = 0;
+					switch (sw){	
+					case 1:     // Agency lower to the right of the sponsor
+						sinA = (agencyPos[0] - sponsorPos[0])/dist;
+						angle = Math.asin(sinA);
+						xDelta = sinA * moveRate * -1;
+						yDelta = Math.cos(angle) * moveRate;
+						break;
+					case 2: 	// Agency higher to the right of the sponsor
+						sinA = (agencyPos[0] - sponsorPos[0])/dist;
+						angle = Math.asin(sinA);
+						xDelta = sinA * moveRate * -1;
+						yDelta = Math.cos(angle) * moveRate * -1;
+						break;
+					case 3:		// Agency lower to the left of the sponsor
+						sinA = (sponsorPos[1] - agencyPos[1])/dist;
+						angle = Math.asin(sinA);
+						xDelta = Math.cos(angle) * moveRate;
+						yDelta = sinA * moveRate;
+						break;
+					case 4:		// Agency higher to the left of the sponsor
+						sinA = (agencyPos[1] - sponsorPos[1])/dist;
+						angle = Math.asin(sinA);
+						xDelta = Math.cos(angle)* moveRate;
+						yDelta = sinA * moveRate * -1;
+						break;
+					case 5: 	// Agency is on the same x-axis as the sponsor
+						xDelta = agencyPos[0];
+						yDelta = agencyPos[1] > sponsorPos[1] ? agencyPos[1] - moveRate : agencyPos[1] + moveRate;
+						break;
+					case 6:		// Agency is on the same y-axis as the sponsor
+						xDelta = agencyPos[0] > sponsorPos[0] ? agencyPos[0] - moveRate : agencyPos[0] + moveRate;
+						yDelta = agencyPos[1];
+						break;
+					}
+					agency.setPosition(agencyPos[0] + xDelta, agencyPos[1] + yDelta);
+				}	
+			}
+			else{ // move at random
+				// pick a direction 
+				double x = Math.random() - 0.5; 
+				double y = Math.random() - 0.5; 
+				x = agency.getPosition()[0] + (x/Math.abs(x))*moveRate; // to let random produce either negative or positive value.
+				y = agency.getPosition()[1] + (y/Math.abs(y))*moveRate;
+				if (x > worldSize[0])  {x = (x - (x - worldSize[0])); } // if out of bounds, it bounces back into the world
+				if (x < 0)             {x = Math.abs(x);} // same if it bounces the other way out of bounds 
+				if (y > worldSize[1])  {y = (y - (y - worldSize[1])); } // if out of bounds, it bounces back into the world
+				if (y < 0)             {y = Math.abs(y);} // same if it bounces the other way out of bounds 
+			}
+		} // moveCloserToSponsor
+	} // class Moving
 	/* 
 	 * Following is a set of private classes which helps make different types of calculation. 
 	 * If new enum values are created, this is the place to implement the corresponding code.
 	 * 	
 	 */
-	static final class Moving { // private class for performing movement.
-		private static void move(MoveSetting ms, ArrayList<Agency> LAgencies, ArrayList<Sponsor> LSponsors, double moveRate){
-			switch (ms){
-			case CLOSER_TO_SPONSOR:
-				moveCloserToSponsor(LAgencies, LSponsors, moveRate);
-				break;
-			case MOVE_AT_RANDOM:
-				moveAtRandom(LAgencies, LSponsors);
-				break;
-			case MOVE_FOR_BETTER_SPONSOR:
-				moveForBetter(LAgencies, LSponsors);
-				break;
-			case NO_MOVEMENT:
-			};
-		}	
-		private static void moveCloserToSponsor(ArrayList<Agency> Agencies, ArrayList<Sponsor> Sponsors, double moveRate){
-			int agencySize = Agencies.size();
-			for (int i=0;i<agencySize;i++){
-				Agency agency = Agencies.get(i);
-				Sponsor sponsor = agency.getSponsor(); 
-				if (sponsor != null){
-					double[] agencyPos  = agency.getPosition();
-					double[] sponsorPos = sponsor.getPosition();
-					double x = agencyPos[0] + ((sponsorPos[0] - agencyPos[0]) * moveRate);
-					double y = agencyPos[1] + ((sponsorPos[1] - agencyPos[1])  * moveRate);
-					agency.setPosition(x,y);
-				}
-			}
-		} // moveCloserToSponsor
-
-		private static void moveAtRandom(ArrayList<Agency> Agencies, ArrayList<Sponsor> Sponsors){
-
-		} // moveAtRandom
-		private static void moveForBetter(ArrayList<Agency> Agencies, ArrayList<Sponsor> Sponsors){
-		} // moveForBetter
-	} // class Moving
-
 	static class Payout { // private class for calculating payout based on payment model
 		private static void payout(CutDownModel model, Sponsor sponsor){
 			/* If a sponsor has sufficient money, the cutDownModel is never used. Hence the invocation of sufficientMoneyForSponsor
@@ -431,6 +476,7 @@ public class World {
 					payoutPercentageRate(rate, sponsor);
 					break;
 				case PROBABILITY_CALCULATION: 
+					payoutBasedOnRisk(sponsor);
 					break;
 				case PROBABILITY_TIME_CALCULATION:
 					break;
@@ -478,16 +524,50 @@ public class World {
 			sponsor.setPayoff(payout); 				// finally set the payoff for the sponsor
 		} // payoutPercentageRate
 
+		private static void payoutBasedOnRisk(Sponsor sponsor){
+			// finds a set of agencies, which will be cut percentagewise. This is done by initially finding the candidates 
+			// at baserisk > random()
+			// Afterwards all are investigated based upon baserisk compared against random
+			// for all the cutdown agencies, the payout will be: 
+			// payout = budget - (totalAgencyNeed*budget/totalcut
+			double totalAgencyNeed = getTotalAgencyNeed(sponsor);
+			double totalSponsorMoney = sponsor.getMoney();
+			double difference = totalAgencyNeed - totalSponsorMoney;
+			double startDifference = difference;
+			double totalMoneyCut = 0;
+			int size = sponsor.getAgencies().size();
+			Agency agency;
+			while (startDifference > 0){
+				for(int i=0;i<size;i++){
+					agency = sponsor.getAgencies().get(i);
+					if (!agency.getCutDown()){ // only inspect agencies, that hasn't already been cut in this routine
+						if (agency.getRisk() > Math.random()){
+							startDifference -= agency.getBudget();
+							totalMoneyCut += agency.getBudget();
+							agency.setCutDown(true); // the agency has been selected and is now flagged for cut-down
+						}
+					}
+				}
+			}
+			for(int i=0; i< size;i++){
+				agency = sponsor.getAgencies().get(i);
+				if (!agency.getCutDown()){
+					agency.setPayout(agency.getBudget());
+				}
+				else{
+					agency.setPayout(agency.getBudget() - (totalAgencyNeed*agency.getBudget()/totalMoneyCut));
+				}
+			}
+
+		} // payoutBasedOnRisk
+
 		private static double calculatePercentage(Sponsor sponsor){
 			double totalAmount = 0;
 			double totalAgencyNeed = 0;
 			double percentageOfPayout;
-			Agency agency;
 			totalAmount = sponsor.getMoney();
-			for (int i = 0;i<sponsor.getAgencies().size();i++){
-				agency = sponsor.getAgencies().get(i);
-				totalAgencyNeed += agency.getBudget();
-			}
+			totalAgencyNeed = getTotalAgencyNeed(sponsor);
+
 			if (totalAgencyNeed == 0){  // no reason to divide by 0, if there is no moneyneed
 				percentageOfPayout = 0;
 				return percentageOfPayout;
@@ -500,29 +580,38 @@ public class World {
 			}	
 		} // calculatePercentage
 	} // class Payout
-	
+
+	private static double getTotalAgencyNeed(Sponsor sponsor){
+		double totalAgencyNeed = 0;
+		for (int i = 0;i<sponsor.getAgencies().size();i++){
+			Agency agency = sponsor.getAgencies().get(i);
+			totalAgencyNeed += agency.getBudget();
+		}
+		return totalAgencyNeed;
+	} // getTotalAgencyNeed
+
 	private static class Settings{
 		private String connectionUrl = "jdbc:mysql://localhost:3306/sponsors_agencies"  + "?useSSL=false";
 		private String saveLocation = "C:\\";
 		private String dbConnector = "com.mysql.jdbc.Driver";
 		private String user = "root";
-		private String pw   = "1064";
+		private String pw   = "?Hard2type!";
 	} // class Settings
-	
+
 	/*
 	 * Small getters to retrieve some world specific settings, embedded in the private class: Settings. 
 	 */
-		public String getConnectionUrl(){return settings.connectionUrl;	}
-		public String getPath(){return settings.saveLocation;};
-		public String getdbConnector(){return settings.dbConnector;}
-		public String getuser(){return settings.user;}
-		public String getpw(){return settings.pw;} 
-		/* obviously no-one leaves a password hardcoded in the source. 
-		 * Specify password in encrypted config file and read encrypted password into char array (as opposed to the current String)
-		 * So basically read all config settings into user interface (assuming the data has been stored in a file. (and pw in a segregated encrypted file!) 
-		 * (maybe use JPasswordField or PasswordField depending on whether JavaFX is chosen)  
-		 *  Initialise the Setting class with all available config, including pw in char-array instead of current String.
-		 */
+	public String getConnectionUrl(){return settings.connectionUrl;	}
+	public String getPath(){return settings.saveLocation;};
+	public String getdbConnector(){return settings.dbConnector;}
+	public String getuser(){return settings.user;}
+	public String getpw(){return settings.pw;} 
+	/* obviously no-one leaves a password hardcoded in the source. 
+	 * Specify password in encrypted config file and read encrypted password into char array (as opposed to the current String)
+	 * So basically read all config settings into user interface (assuming the data has been stored in a file. (and pw in a segregated encrypted file!) 
+	 * (maybe use JPasswordField or PasswordField depending on whether JavaFX is chosen)  
+	 *  Initialise the Setting class with all available config, including pw in char-array instead of current String.
+	 */
 
 
 } // Class World

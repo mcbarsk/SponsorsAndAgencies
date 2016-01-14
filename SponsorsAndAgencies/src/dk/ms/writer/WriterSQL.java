@@ -3,7 +3,7 @@ package dk.ms.writer;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+// import java.sql.ResultSet; used for retrieving data or generated keys
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -11,17 +11,16 @@ import java.util.ArrayList;
 import dk.ms.SponsorsAndAgencies.Agency;
 import dk.ms.SponsorsAndAgencies.Sponsor;
 import dk.ms.SponsorsAndAgencies.World;
-import dk.ms.writer.SponsorsAndAgenciesWriter;
 
 /**
- * @author Mark
- *
  * This class connects to a MySQL database and handles all database access.
  * Similar classes can be created if other databases are used, or maybe just writing to a file.
  * Autocommit is switched off solely for performance reasons.
  * When running the prepare method, it will open a connection to the database and write a single record into the world table.
- * The connection will remain open, as it is required for 
+ * The connection will remain open, as it is required for the subsequent writes of agencies and sponsors.  
  * Notice it executes in a batch manner to the MySQL database.
+ * @author Mark Schacht 
+ * 
  */
 public class WriterSQL extends SponsorsAndAgenciesWriter{
 	private final String AGENCY_INSERT = "INSERT INTO sponsors_agencies.agencies (worldID, creationDate, name," +  
@@ -34,14 +33,14 @@ public class WriterSQL extends SponsorsAndAgenciesWriter{
 			"iteration)" + 
 			"VALUES(?,?,?,?,?,?,?,?)";
 	private final String WORLD_INSERT = "INSERT INTO sponsors_agencies.worlds(worldID,creationDate,initialNumberOfSponsors,"+
-			"initialNumberOfAgencies,moveSetting,cutDownModel,worldSize,sponsorSigmaFactor,sponsorMoney,agencyMoney," +
+			"initialNumberOfAgencies,cutDownModel,worldSize,sponsorSigmaFactor,sponsorMoney,agencyMoney," +
 			"agencyMoneyReserveFactor,agencySigmaFactor,agencyRequirementNeed,agencyRequirementSigma,sightOfAgency," + 
 			"moveRate,pickRandomSponsor,numberOfIterations)" +
-			"VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+			"VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 	private String ConnURL; 
 	Connection conn = null;
 	PreparedStatement stmt = null;
-	ResultSet rs = null;
+	//ResultSet rs = null; Used for retrieving data or generated keys
 
 
 	public void setup(){
@@ -74,7 +73,7 @@ public class WriterSQL extends SponsorsAndAgenciesWriter{
 
 				Class.forName(world.getdbConnector()).newInstance();
 				String connectionUser = world.getuser();
-				String connectionPassword = world.getpw(); //"?Hard2type!";
+				String connectionPassword = world.getpw(); 
 				conn = DriverManager.getConnection(ConnURL, connectionUser, connectionPassword);
 				conn.setAutoCommit(false);
 			}
@@ -82,7 +81,19 @@ public class WriterSQL extends SponsorsAndAgenciesWriter{
 
 
 	} // connect
+	
+	public void closeConnection(){
+		try {
+			if (conn !=null && !conn.isClosed()){
+				conn.close();
+			}
+		}catch(Exception e){e.printStackTrace();}
+	}
 
+	/** Opens up a connection against the database and writes a single world record.
+	 *  It leaves the connection open, so either invoke writeData or use the public method to close the 
+	 *  connection (for testing purposes.)
+	 */
 	@Override
 	public void prepare(World world){
 		connect(world);
@@ -92,20 +103,19 @@ public class WriterSQL extends SponsorsAndAgenciesWriter{
 			stmt.setString(2, world.getCreationDate().toString());
 			stmt.setInt(3, world.getInitialNumberOfSponsors());
 			stmt.setInt(4, world.getInitialNumberOfAgencies());
-			stmt.setString(5, world.getMoveSetting().name());
-			stmt.setString(6, world.getCutDownModel().name());
-			stmt.setString(7, world.getWorldSize()[0] + "," + world.getWorldSize()[1]);
-			stmt.setDouble(8, world.getSponsorSigmaFactor());
-			stmt.setDouble(9, world.getSponsorMoney());
-			stmt.setDouble(10, world.getAgencyMoney());
-			stmt.setInt(11, world.getAgencyMoneyReserveFactor());
-			stmt.setDouble(12, world.getAgencySigmaFactor());
-			stmt.setDouble(13, world.getAgencyRequirementNeed());
-			stmt.setDouble(14, world.getAgencyRequirementSigma());
-			stmt.setDouble(15, world.getSightOfAgency());
-			stmt.setDouble(16, world.getMoveRate());
-			stmt.setInt(17, world.isPickRandomSponsor() ? 1:0);
-			stmt.setInt(18, world.getNumberOfIterations());
+			stmt.setString(5, world.getCutDownModel().name());
+			stmt.setString(6, world.getWorldSize()[0] + "," + world.getWorldSize()[1]);
+			stmt.setDouble(7, world.getSponsorSigmaFactor());
+			stmt.setDouble(8, world.getSponsorMoney());
+			stmt.setDouble(9, world.getAgencyMoney());
+			stmt.setInt(10, world.getAgencyMoneyReserveFactor());
+			stmt.setDouble(11, world.getAgencySigmaFactor());
+			stmt.setDouble(12, world.getAgencyRequirementNeed());
+			stmt.setDouble(13, world.getAgencyRequirementSigma());
+			stmt.setDouble(14, world.getSightOfAgency());
+			stmt.setDouble(15, world.getMoveRate());
+			stmt.setInt(16, world.isPickRandomSponsor() ? 1:0);
+			stmt.setInt(17, world.getNumberOfIterations());
 			stmt.execute();	
 			conn.commit();
 
@@ -120,13 +130,12 @@ public class WriterSQL extends SponsorsAndAgenciesWriter{
 			} catch(SQLException sqlex){sqlex.printStackTrace(); try {
 				conn.close();
 			} catch (SQLException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}};
 		}
 
 	}
-	public void writeSponsor(ArrayList<Sponsor> lsponsor, int iteration){
+	private void writeSponsor(ArrayList<Sponsor> lsponsor, int iteration){
 		Sponsor sponsor;
 		//stmt = conn.prepareStatement(InsertQRY, Statement.RETURN_GENERATED_KEYS); // used if keys are interesting
 		try {
@@ -154,7 +163,7 @@ public class WriterSQL extends SponsorsAndAgenciesWriter{
 			} catch(SQLException sqlex){sqlex.printStackTrace();}
 		}	
 	}
-	public void writeAgency(ArrayList<Agency> lagency, int iteration){
+	private void writeAgency(ArrayList<Agency> lagency, int iteration){
 		Agency agency;
 		String InsertQRY = AGENCY_INSERT;
 		try {

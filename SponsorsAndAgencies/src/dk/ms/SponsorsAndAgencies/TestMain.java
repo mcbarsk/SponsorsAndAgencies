@@ -7,7 +7,6 @@ public class TestMain {
 		int numberOfIterations			= 10;
 		int initialNumberOfSponsors 	= 50;
 		int initialNumberOfAgencies 	= 100;
-		MoveSetting ms 					= MoveSetting.CLOSER_TO_SPONSOR;
 		CutDownModel cm 				= CutDownModel.SAME_PERCENTAGE_RATE;
 		int[] ws 						= {5,5};
 		double sponsorSigmaFactor 		= 6; 
@@ -22,9 +21,11 @@ public class TestMain {
 		double moveRate					= 0.5;
 		WriteMethod writeMethod = WriteMethod.TO_DATABASE;
 		World world = new World(numberOfIterations, initialNumberOfSponsors,initialNumberOfAgencies, 
-				                ms, cm, ws,sponsorSigmaFactor, sponsorMoney, agencyMoney,agencyMoneyReserveFactor,
+				                cm, ws,sponsorSigmaFactor, sponsorMoney, agencyMoney,agencyMoneyReserveFactor,
 				                agencySigmaFactor,agencyRequirementNeed,
 			                    agencyRequirementSigma,sightOfAgency, pickRandomSponsor, writeMethod, moveRate);
+		world.orchestrateWorld();
+		
 //		world.initialise();
 //		world.seekPotentialSponsors();
 //		world.allocateSponsor();
@@ -33,7 +34,6 @@ public class TestMain {
 //		world.writeAgencies();
 //		world.removeExhaustedAgencies();
 //		world.generateNewAgencies(); 
-		world.orchestrateWorld();
 	}
 
 }
