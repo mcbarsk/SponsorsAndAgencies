@@ -4,10 +4,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+
 import dk.ms.SponsorsAndAgencies.Agency;
 import dk.ms.SponsorsAndAgencies.Sponsor;
 import dk.ms.SponsorsAndAgencies.World;
-import dk.ms.writer.SponsorsAndAgenciesWriter;
 
 public class WriterFile extends SponsorsAndAgenciesWriter{
 	private String headerFile; // filename of header

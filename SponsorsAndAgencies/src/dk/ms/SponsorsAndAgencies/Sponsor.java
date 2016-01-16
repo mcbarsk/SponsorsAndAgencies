@@ -1,7 +1,6 @@
 package dk.ms.SponsorsAndAgencies;
 
 
-import java.lang.Math;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 

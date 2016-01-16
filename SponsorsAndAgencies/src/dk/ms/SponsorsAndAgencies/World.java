@@ -3,6 +3,9 @@ package dk.ms.SponsorsAndAgencies;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.UUID;
+
+import org.apache.commons.math.stat.descriptive.DescriptiveStatistics;
+
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -40,7 +43,7 @@ public class World {
 	private long 				start;
 	private long				end;
 	private Settings			settings; 
-
+	
 	public World(int numberOfIterations,
 			int initialNumberOfSponsors, 
 			int initialNumberOfAgencies, 
@@ -65,8 +68,8 @@ public class World {
 			throw new IllegalArgumentException("MoveRate must be in the range [0..1]");
 		if(initialNumberOfSponsors < 1)
 			throw new IllegalArgumentException("Number of sponsors must be > 0");
-		if(initialNumberOfAgencies < 1)
-			throw new IllegalArgumentException("Number of agencies must be > 0");
+		if(initialNumberOfAgencies < 0)
+			throw new IllegalArgumentException("Number of agencies must be >= 0");
 		if (cutDownModel == null)
 			throw new IllegalArgumentException("Specify a cut down model");
 
@@ -100,11 +103,11 @@ public class World {
 		case TO_FILE:
 			writer = new WriterFile();
 			break;
+		case NONE:
+			writer = null;
 		}
 		settings 						= new Settings();
-
-
-
+		
 	}; // World
 
 	@Override public String toString(){return "worldID:" + worldID ;}
@@ -242,7 +245,7 @@ public class World {
 	public int generateNewAgencies(){ // Step 7
 		//setstart();
 		double totalSponsorMoney = 0;
-		double totalAgencyRequirement = this.agencyMoney; // initiated like this, if no agencies initially have been specified. 
+		double totalAgencyRequirement = 0; //  
 		int i;
 		for (i=0; i<LSponsors.size();i++){
 			totalSponsorMoney += LSponsors.get(i).getMoney();
@@ -250,7 +253,12 @@ public class World {
 		for (i=0;i<LAgencies.size();i++){
 			totalAgencyRequirement += LAgencies.get(i).getBudget();
 		}
-		double avgBudget = totalAgencyRequirement/LAgencies.size();
+		double avgBudget = 0;
+		if (initialNumberOfAgencies == 0){
+			avgBudget = this.agencyMoney;
+		}
+		else
+			avgBudget = totalAgencyRequirement/LAgencies.size();
 		int newAgencies = (int)((totalSponsorMoney - totalAgencyRequirement) / avgBudget); // int cast rounds automatically.
 		newAgencies = (int)sponsorUtilities.gaussian(newAgencies, newAgencies * 0.02);
 		for (i=1;i<newAgencies;i++){
@@ -307,9 +315,15 @@ public class World {
 		log(start,end,"iteration:" + numberOfIterations);
 	}
 	public void write(int iteration){
-		if (iteration == 1) // only prepare for the first iteration
-			writer.prepare(this);
-		writer.writeData(this, LAgencies,LSponsors, iteration);
+		if (writer != null){
+			if (iteration == 1) // only prepare for the first iteration
+				writer.prepare(this);
+			writer.writeData(this, LAgencies,LSponsors, iteration);
+		}
+		else
+			for (int i=0;i<LAgencies.size();i++){
+				System.out.println(LAgencies.get(i).getBudget());
+			}
 	} // write
 
 	public void move(){
@@ -373,9 +387,7 @@ public class World {
 		}
 		return returnValue;
 	}
-	private double smallest (double x, double y){
-		return (Double.compare(x, y) > 0 ? y : x); 
-	}
+
 	private void moveCloserToSponsor(ArrayList<Agency> Agencies, ArrayList<Sponsor> Sponsors, double moveRate){
 		int agencySize = Agencies.size();
 		for (int i=0;i<agencySize;i++){
@@ -399,8 +411,9 @@ public class World {
 					if (Double.compare(agencyPos[0], sponsorPos[0]) > 0 && Double.compare(agencyPos[1], sponsorPos[1]) > 0 ){sw=2;}
 					if (Double.compare(agencyPos[0], sponsorPos[0]) < 0 && Double.compare(agencyPos[1], sponsorPos[1]) < 0 ){sw=3;}
 					if (Double.compare(agencyPos[0], sponsorPos[0]) < 0 && Double.compare(agencyPos[1], sponsorPos[1]) > 0 ){sw=4;}
-					if (Double.compare(agencyPos[0], sponsorPos[0]) == 0){sw=5;}
-					if (Double.compare(agencyPos[1], sponsorPos[1]) == 0){sw=6;}
+					if (Double.compare(agencyPos[0], sponsorPos[0]) == 0 && Double.compare(agencyPos[1], sponsorPos[1]) != 0){sw=5;}
+					if (Double.compare(agencyPos[1], sponsorPos[1]) == 0 && Double.compare(agencyPos[0], sponsorPos[0]) != 0){sw=6;}
+					if (Double.compare(agencyPos[1], sponsorPos[1]) == 0 && Double.compare(agencyPos[0], sponsorPos[0]) == 0){sw=7;}
 					double sinA;
 					double angle;
 					double xDelta = 0;
@@ -432,10 +445,10 @@ public class World {
 						break;
 					case 5: 	// Agency is on the same x-axis as the sponsor
 						xDelta = agencyPos[0];
-						yDelta = agencyPos[1] > sponsorPos[1] ? agencyPos[1] - moveRate : agencyPos[1] + moveRate;
+						yDelta = Double.compare(agencyPos[1],sponsorPos[1]) > 0 ? agencyPos[1] - moveRate : agencyPos[1] + moveRate;
 						break;
 					case 6:		// Agency is on the same y-axis as the sponsor
-						xDelta = agencyPos[0] > sponsorPos[0] ? agencyPos[0] - moveRate : agencyPos[0] + moveRate;
+						xDelta = Double.compare(agencyPos[0],sponsorPos[0]) > 0 ? agencyPos[0] - moveRate : agencyPos[0] + moveRate;
 						yDelta = agencyPos[1];
 						break;
 					}
@@ -448,10 +461,10 @@ public class World {
 				double y = Math.random() - 0.5; 
 				x = agency.getPosition()[0] + (x/Math.abs(x))*moveRate; // to let random produce either negative or positive value.
 				y = agency.getPosition()[1] + (y/Math.abs(y))*moveRate;
-				if (x > worldSize[0])  {x = (x - (x - worldSize[0])); } // if out of bounds, it bounces back into the world
-				if (x < 0)             {x = Math.abs(x);} // same if it bounces the other way out of bounds 
-				if (y > worldSize[1])  {y = (y - (y - worldSize[1])); } // if out of bounds, it bounces back into the world
-				if (y < 0)             {y = Math.abs(y);} // same if it bounces the other way out of bounds 
+				if (Double.compare(x,worldSize[0]) > 0)  {x = (x - (x - worldSize[0])); } // if out of bounds, it bounces back into the world
+				if (Double.compare(x,0) < 0)             {x = Math.abs(x);} // same if it bounces the other way out of bounds 
+				if (Double.compare(y,worldSize[1]) > 0)  {y = (y - (y - worldSize[1])); } // if out of bounds, it bounces back into the world
+				if (Double.compare(y,0) < 0)             {y = Math.abs(y);} // same if it bounces the other way out of bounds 
 			}
 		} // moveCloserToSponsor
 	} // class Moving
@@ -595,7 +608,7 @@ public class World {
 		private String saveLocation = "C:\\";
 		private String dbConnector = "com.mysql.jdbc.Driver";
 		private String user = "root";
-		private String pw   = "?Hard2type!";
+		private String pw   = "1064"; //"?Hard2type!";
 	} // class Settings
 
 	/*

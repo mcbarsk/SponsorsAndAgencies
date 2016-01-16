@@ -1,7 +1,6 @@
 package dk.ms.SponsorsAndAgencies;
 import java.sql.Timestamp;
-import java.util.*;
-import java.lang.Math;
+import java.util.ArrayList;
 public class Agency implements Cloneable{
 
 

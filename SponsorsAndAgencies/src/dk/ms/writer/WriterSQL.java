@@ -5,7 +5,6 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 // import java.sql.ResultSet; used for retrieving data or generated keys
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 
 import dk.ms.SponsorsAndAgencies.Agency;
@@ -24,22 +23,30 @@ import dk.ms.SponsorsAndAgencies.World;
  */
 public class WriterSQL extends SponsorsAndAgenciesWriter{
 	private final String AGENCY_INSERT = "INSERT INTO sponsors_agencies.agencies (worldID, creationDate, name," +  
+			"risk,eyesight) " +  
+			"VALUES (?,?,?,?,?)";
+	private final String AGENCY_IT_INSERT = "INSERT INTO sponsors_agencies.agency_iterations (worldID, name," +  
 			"chosenSponsor,budget,moneyNeeded," + 
-			"savings,risk,position_x,position_y," + 
-			"payout,eyesight,cutdown,iteration) " +  
-			"VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+			"savings,position_x,position_y," + 
+			"payout,cutdown,iteration) " +  
+			"VALUES (?,?,?,?,?,?,?,?,?,?,?)";
 	private final String SPONSOR_INSERT = "INSERT INTO sponsors_agencies.sponsors (worldID, creationDate, name," + 
-			"position_x,position_y,money,payoff," + 
-			"iteration)" + 
-			"VALUES(?,?,?,?,?,?,?,?)";
+			"position_x,position_y,money)" +
+			"VALUES(?,?,?,?,?,?)";
+	private final String SPONSOR_IT_INSERT = "INSERT INTO sponsors_agencies.sponsor_iterations (worldID, name," + 
+			"payoff,iteration)" + 
+			"VALUES(?,?,?,?)";
 	private final String WORLD_INSERT = "INSERT INTO sponsors_agencies.worlds(worldID,creationDate,initialNumberOfSponsors,"+
 			"initialNumberOfAgencies,cutDownModel,worldSize,sponsorSigmaFactor,sponsorMoney,agencyMoney," +
 			"agencyMoneyReserveFactor,agencySigmaFactor,agencyRequirementNeed,agencyRequirementSigma,sightOfAgency," + 
 			"moveRate,pickRandomSponsor,numberOfIterations)" +
 			"VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 	private String ConnURL; 
+	private boolean sponsorWritten = false;
+	private int lastAgencyWritten = -1;
 	Connection conn = null;
 	PreparedStatement stmt = null;
+	PreparedStatement stmt2 = null;
 	//ResultSet rs = null; Used for retrieving data or generated keys
 
 
@@ -51,7 +58,7 @@ public class WriterSQL extends SponsorsAndAgenciesWriter{
 		try{
 			connect(world);
 			writeAgency(lagency, iteration);
-			writeSponsor(lsponsor, iteration);
+			writeSponsorIterations(lsponsor, iteration);
 			conn.commit();
 
 		}
@@ -135,21 +142,33 @@ public class WriterSQL extends SponsorsAndAgenciesWriter{
 		}
 
 	}
-	private void writeSponsor(ArrayList<Sponsor> lsponsor, int iteration){
+	private void writeSponsorIterations(ArrayList<Sponsor> lsponsor, int iteration){
 		Sponsor sponsor;
 		//stmt = conn.prepareStatement(InsertQRY, Statement.RETURN_GENERATED_KEYS); // used if keys are interesting
 		try {
-			stmt = conn.prepareStatement(SPONSOR_INSERT); // 
-			for (int i=0;i<lsponsor.size();i++){
-				sponsor = lsponsor.get(i);
+			 // 
+			if (!sponsorWritten){ // to ensure sponsors are only written once.
+				stmt = conn.prepareStatement(SPONSOR_INSERT);
+				for (int i=0;i<lsponsor.size();i++){
+					sponsor = lsponsor.get(i);
+					stmt.setString(1,sponsor.getWorldID().toString());
+					stmt.setTimestamp(2, sponsor.getCreationDate());
+					stmt.setInt   (3,sponsor.getName());
+					stmt.setDouble(4, sponsor.getPosition()[0]);
+					stmt.setDouble(5, sponsor.getPosition()[1]);
+					stmt.setDouble(6, sponsor.getMoney());
+					stmt.addBatch();
+				}
+				sponsorWritten = true; 
+				stmt.executeBatch();
+			}
+			stmt = conn.prepareStatement(SPONSOR_IT_INSERT);
+				for (int i=0;i<lsponsor.size();i++){
+					sponsor = lsponsor.get(i);
 				stmt.setString(1,sponsor.getWorldID().toString());
-				stmt.setTimestamp(2, sponsor.getCreationDate());
-				stmt.setInt   (3,sponsor.getName());
-				stmt.setDouble(4, sponsor.getPosition()[0]);
-				stmt.setDouble(5, sponsor.getPosition()[1]);
-				stmt.setDouble(6, sponsor.getMoney());
-				stmt.setDouble(7, sponsor.getPayoff());
-				stmt.setInt(8, iteration);
+				stmt.setInt   (2,sponsor.getName());
+				stmt.setDouble(3, sponsor.getPayoff());
+				stmt.setInt(4, iteration);
 				stmt.addBatch();
 			}
 			stmt.executeBatch();
@@ -165,36 +184,41 @@ public class WriterSQL extends SponsorsAndAgenciesWriter{
 	}
 	private void writeAgency(ArrayList<Agency> lagency, int iteration){
 		Agency agency;
-		String InsertQRY = AGENCY_INSERT;
-		try {
-			stmt = conn.prepareStatement(InsertQRY, Statement.RETURN_GENERATED_KEYS); // returns id of new record
+		try {stmt = conn.prepareStatement(AGENCY_INSERT); 
+			 stmt2 = conn.prepareStatement(AGENCY_IT_INSERT);
 			for (int i=0;i<lagency.size();i++){
 				agency = lagency.get(i);
-				stmt.setString(1,agency.getWorldID().toString());
-
+				if (agency.getName() > lastAgencyWritten){
+					stmt.setString    (1,agency.getWorldID().toString());
+					stmt.setTimestamp (2, agency.getCreationDate());
+					stmt.setInt       (3,agency.getName());
+					stmt.setDouble    (4, agency.getRisk());
+					stmt.setDouble    (5, agency.getEyesight());
+					lastAgencyWritten = agency.getName();
+					stmt.addBatch();
+				}
 				int sponsorname = -1;
 				if (agency.getSponsor() == null)
 					sponsorname = -1;
 				else
 					sponsorname = agency.getSponsor().getName();
 				int cutDown = agency.getCutDown() ?  1 : 0;
-				stmt.setTimestamp(2, agency.getCreationDate());
-				stmt.setInt   (3,agency.getName());
-				stmt.setInt(4, sponsorname );	
-				stmt.setDouble(5, agency.getBudget());
-				stmt.setDouble(6, agency.getMoneyNeeded());
-				stmt.setDouble(7, agency.getSavings());
-				stmt.setDouble(8, agency.getRisk());
-				stmt.setDouble(9, agency.getPosition()[0]);
-				stmt.setDouble(10, agency.getPosition()[1]);
-				stmt.setDouble(11, agency.getPayout());
-				stmt.setDouble(12, agency.getEyesight());
-				stmt.setInt(13, cutDown);
-				stmt.setInt   (14,iteration);
+				stmt2.setString (1,agency.getWorldID().toString());
+				stmt2.setInt     (2,agency.getName());
+				stmt2.setInt     (3, sponsorname );	
+				stmt2.setDouble  (4, agency.getBudget());
+				stmt2.setDouble  (5, agency.getMoneyNeeded());
+				stmt2.setDouble  (6, agency.getSavings());
+				stmt2.setDouble  (7, agency.getPosition()[0]);
+				stmt2.setDouble  (8, agency.getPosition()[1]);
+				stmt2.setDouble  (9, agency.getPayout());
+				stmt2.setInt    (10, cutDown);
+				stmt2.setInt    (11,iteration);
 				//stmt.setTimestamp(12, beggar.getWorldID());
-				stmt.addBatch();
+				stmt2.addBatch();
 			}
 			stmt.executeBatch();
+			stmt2.executeBatch();
 
 
 		}
@@ -205,7 +229,9 @@ public class WriterSQL extends SponsorsAndAgenciesWriter{
 			try{
 				if (stmt != null)
 					stmt.close();
-			} catch(SQLException sqlex){};
+				if(stmt2 != null)
+					stmt2.close();
+			} catch(SQLException sqlex){sqlex.printStackTrace();};
 		}
 
 	} // writeAgency

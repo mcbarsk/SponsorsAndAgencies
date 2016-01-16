@@ -1,5 +1,5 @@
 package dk.ms.SponsorsAndAgencies;
-import java.util.*; 
+import java.util.Random; 
 
 public class Utilities {
 	private Random rnd;
