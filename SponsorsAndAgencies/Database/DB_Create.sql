@@ -1,42 +1,56 @@
+CREATE DATABASE `sponsors_agencies` /*!40100 DEFAULT CHARACTER SET utf8 */;
+
 CREATE TABLE `agencies` (
   `idAgencies` int(11) NOT NULL AUTO_INCREMENT,
   `worldID` varchar(45) NOT NULL,
   `creationDate` datetime NOT NULL,
   `name` int(11) DEFAULT '0',
-  `chosenSponsor` int(11) DEFAULT NULL,
-  `budget` double DEFAULT '0',
-  `moneyNeeded` double DEFAULT '0',
-  `savings` double DEFAULT '0',
   `risk` double DEFAULT '0',
-  `position_x` double DEFAULT '0',
-  `position_y` double DEFAULT '0',
-  `payout` double DEFAULT '0',
   `eyesight` double DEFAULT '0',
-  `cutdown` int(11) DEFAULT '0',
-  `iteration` int(11) DEFAULT NULL,
   PRIMARY KEY (`idAgencies`),
-  KEY `idx_agencies_worldID_name` (`worldID`,`name`),
-  KEY `idx_agencies_worldID_name_iteration` (`worldID`,`iteration`,`name`),
-  KEY `idx_agencies_worldID` (`worldID`),
-  KEY `idx_agencies_worldID_iteration` (`worldID`,`iteration`),
-  KEY `idx_agencies_name_worldID` (`name`,`worldID`),
-  KEY `idx_agencies_name_worldID_iteration` (`name`,`worldID`,`iteration`)
-) ENGINE=InnoDB AUTO_INCREMENT=520480 DEFAULT CHARSET=utf8;
+  KEY `idx_agencies_worldID_name` (`worldID`,`name`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+
+CREATE TABLE `agency_iterations` (
+  `idagency_iteration` int(11) NOT NULL AUTO_INCREMENT,
+  `worldID` varchar(45) NOT NULL,
+  `name` int(11) NOT NULL,
+  `chosenSponsor` int(11) DEFAULT NULL,
+  `budget` double DEFAULT NULL,
+  `moneyNeeded` double DEFAULT NULL,
+  `savings` double DEFAULT NULL,
+  `position_x` double DEFAULT NULL,
+  `position_y` double DEFAULT NULL,
+  `payout` double DEFAULT NULL,
+  `cutdown` int(11) DEFAULT NULL,
+  `iteration` int(11) NOT NULL,
+  PRIMARY KEY (`idagency_iteration`),
+  UNIQUE KEY `idx_agency_iterations_worldID_iteration_name` (`worldID`,`iteration`,`name`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
 CREATE TABLE `sponsors` (
   `idsponsors` int(11) NOT NULL AUTO_INCREMENT,
-  `worldID` varchar(45) DEFAULT NULL,
-  `creationDate` datetime DEFAULT NULL,
-  `name` int(11) DEFAULT NULL,
+  `worldID` varchar(45) NOT NULL,
+  `creationDate` datetime NOT NULL,
+  `name` int(11) NOT NULL,
   `position_x` double DEFAULT NULL,
   `position_y` double DEFAULT NULL,
   `money` double DEFAULT NULL,
-  `payoff` double DEFAULT NULL,
-  `iteration` int(11) DEFAULT NULL,
   PRIMARY KEY (`idsponsors`),
-  KEY `idx_sponsors_name_worldID` (`name`,`worldID`),
+  UNIQUE KEY `idx_sponsors_worldID_name` (`worldID`,`name`),
   KEY `idx_sponsors_worldID` (`worldID`)
-) ENGINE=InnoDB AUTO_INCREMENT=105651 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+
+CREATE TABLE `sponsor_iterations` (
+  `idsponsor_iterations` int(11) NOT NULL AUTO_INCREMENT,
+  `worldID` varchar(45) NOT NULL,
+  `name` int(11) NOT NULL,
+  `payoff` double DEFAULT NULL,
+  `iteration` int(11) NOT NULL,
+  PRIMARY KEY (`idsponsor_iterations`),
+  UNIQUE KEY `idx_sponsor_iterations_worldID_name_iteration` (`worldID`,`name`,`iteration`),
+  KEY `idx_sponsor_iterations_worldID_name` (`worldID`,`name`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
 CREATE TABLE `worlds` (
   `idworld` int(11) NOT NULL AUTO_INCREMENT,
@@ -44,7 +58,6 @@ CREATE TABLE `worlds` (
   `creationDate` datetime NOT NULL,
   `initialNumberOfSponsors` int(11) DEFAULT '0',
   `initialNumberOfAgencies` int(11) DEFAULT NULL,
-  `moveSetting` varchar(45) NOT NULL,
   `cutDownModel` varchar(45) NOT NULL,
   `worldSize` varchar(45) NOT NULL,
   `sponsorSigmaFactor` double DEFAULT '0',
@@ -58,7 +71,11 @@ CREATE TABLE `worlds` (
   `moveRate` double DEFAULT '0',
   `pickRandomSponsor` int(11) DEFAULT '0',
   `numberOfIterations` int(11) DEFAULT '0',
-  PRIMARY KEY (`idworld`)
-) ENGINE=InnoDB AUTO_INCREMENT=517673 DEFAULT CHARSET=utf8;
+  PRIMARY KEY (`idworld`),
+  KEY `idx_worlds_worldID` (`worldID`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+
+
+
 
 

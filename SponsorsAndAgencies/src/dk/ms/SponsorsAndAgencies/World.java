@@ -40,9 +40,12 @@ public class World {
 	private WriteMethod			writeMethod;
 	private SponsorsAndAgenciesWriter	writer;				
 	private NumberFormat		formatter = new DecimalFormat("#0.00000");
+	private Settings			settings; 
 	private long 				start;
 	private long				end;
-	private Settings			settings; 
+	private long 				start1; // just for logging performance
+	private long				end1;   // just for logging performance
+	private boolean 			log = false; // true if runtime output to console.			 
 	
 	public World(int numberOfIterations,
 			int initialNumberOfSponsors, 
@@ -156,6 +159,16 @@ public class World {
 
 	private void setstart(){ start = System.currentTimeMillis();}
 	private void setend(){ 	end = System.currentTimeMillis();}
+	private void logging (int i, int step){
+		if (log){
+			if (i==1) 
+				start1 = System.currentTimeMillis();
+			if (i==2){ 
+				end1 = System.currentTimeMillis();
+				log(start1, end1, "Step:" + step);
+			}
+		}
+	}
 	private double distance(Sponsor sponsor, Agency agency){ // calculate distance between sponsor and agency
 		return Utilities.distance(agency.getPosition()[0],agency.getPosition()[1],sponsor.getPosition()[0],sponsor.getPosition()[1]); 
 	}; // distance	
@@ -299,17 +312,37 @@ public class World {
 		/* This method arranges all the steps and iterates.
 		 */
 		setstart();
+		logging(1,1);
 		initialise();
+		logging(2,1);
 		for (int i=1;i<=numberOfIterations;i++){
+			logging(1,2);
 			seekPotentialSponsors();
+			logging(2,2);
+			logging(1,3);
 			allocateSponsor();
+			logging(2,3);
+			logging(1,4);
 			allocateFunding();
+			logging(2,4);
+			logging(1,5);
 			spendBudget();
+			logging(2,5);
+			logging(1,6);
 			write(i);
+			logging(2,6);
+			logging(1,7);
 			removeExhaustedAgencies();
+			logging(2,7);
+			logging(1,8);
 			generateNewAgencies();
+			logging(2,8);
+			logging(1,9);
 			setBudgetRequirements();
+			logging(2,9);
+			logging(1,10);
 			move();
+			logging(2,10);
 		}
 		setend();
 		log(start,end,"iteration:" + numberOfIterations);
@@ -322,7 +355,7 @@ public class World {
 		}
 		else
 			for (int i=0;i<LAgencies.size();i++){
-				System.out.println(LAgencies.get(i).getBudget());
+				System.out.println(LAgencies.get(i).getPayout());
 			}
 	} // write
 
@@ -530,8 +563,9 @@ public class World {
 			Agency agency;
 			for (int i=0; i<lines;i++){
 				agency = sponsor.getAgencies().get(i); // get agency
-				payout += rate * agency.getBudget();          // add budget to total amount
-				agency.setPayout(rate * agency.getBudget());  // perform the payout
+				double amount = rate * agency.getBudget(); 
+				payout += amount;          // add budget to total amount
+				agency.setPayout(amount);  // perform the payout
 				agency.setCutDown(true);                      // an agency has been cut. This could affect, whether it chooses to move.
 			}
 			sponsor.setPayoff(payout); 				// finally set the payoff for the sponsor
@@ -548,9 +582,10 @@ public class World {
 			double difference = totalAgencyNeed - totalSponsorMoney;
 			double startDifference = difference;
 			double totalMoneyCut = 0;
+			double payoff = 0;
 			int size = sponsor.getAgencies().size();
 			Agency agency;
-			while (startDifference > 0){
+			while ( Double.compare(startDifference,0) > 0){ // find the ones to be cut
 				for(int i=0;i<size;i++){
 					agency = sponsor.getAgencies().get(i);
 					if (!agency.getCutDown()){ // only inspect agencies, that hasn't already been cut in this routine
@@ -558,19 +593,25 @@ public class World {
 							startDifference -= agency.getBudget();
 							totalMoneyCut += agency.getBudget();
 							agency.setCutDown(true); // the agency has been selected and is now flagged for cut-down
+							if (Double.compare(startDifference, 0) <= 0){ i = size;}  // terminate for loop if sufficient have been found
+							
 						}
 					}
 				}
 			}
-			for(int i=0; i< size;i++){
+			for(int i=0; i< size;i++){ // then pay them the calculated money, and pay the rest their budget
 				agency = sponsor.getAgencies().get(i);
 				if (!agency.getCutDown()){
+					payoff += agency.getBudget();
 					agency.setPayout(agency.getBudget());
 				}
 				else{
-					agency.setPayout(agency.getBudget() - (totalAgencyNeed*agency.getBudget()/totalMoneyCut));
+					double payAmount = agency.getBudget() - ((totalAgencyNeed - totalSponsorMoney) *agency.getBudget()/totalMoneyCut); // percentage cut
+					payoff += payAmount;
+					agency.setPayout(payAmount);
 				}
 			}
+			sponsor.setPayoff(payoff); // finally set the amount the sponsor pays out
 
 		} // payoutBasedOnRisk
 
@@ -605,7 +646,7 @@ public class World {
 
 	private static class Settings{
 		private String connectionUrl = "jdbc:mysql://localhost:3306/sponsors_agencies"  + "?useSSL=false";
-		private String saveLocation = "C:\\";
+		private String saveLocation = "E:\\Data\\";
 		private String dbConnector = "com.mysql.jdbc.Driver";
 		private String user = "root";
 		private String pw   = "1064"; //"?Hard2type!";

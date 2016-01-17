@@ -6,10 +6,11 @@ public class TestMain {
 
 	public static void main(String[] args) {
 
-		int numberOfIterations			= 1;
+		int numberOfIterations			= 1000;
 		int initialNumberOfSponsors 	= 50;
 		int initialNumberOfAgencies 	= 270;
-		CutDownModel cm 				= CutDownModel.SAME_PERCENTAGE_RATE;
+		// CutDownModel cm 				= CutDownModel.SAME_PERCENTAGE_RATE;
+		CutDownModel cm 				= CutDownModel.PROBABILITY_CALCULATION;
 		int[] ws 						= {5,5};
 		double sponsorSigmaFactor 		= 6; 
 		double sponsorMoney 			= 50;
@@ -21,10 +22,12 @@ public class TestMain {
 		double sightOfAgency 			= 2;
 		boolean pickRandomSponsor 		= false;
 		double moveRate					= 0.5;
-		WriteMethod writeMethod = WriteMethod.NONE;
+		// WriteMethod writeMethod = WriteMethod.NONE;
+		// WriteMethod writeMethod = WriteMethod.TO_DATABASE;
+		WriteMethod writeMethod = WriteMethod.TO_FILE;
 		World world;
 		//
-		int ab = 2;
+		int ab = 1;
 		if(ab==2){
 			Utilities util = new Utilities();
 			DescriptiveStatistics stat;
