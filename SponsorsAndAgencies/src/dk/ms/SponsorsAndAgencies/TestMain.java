@@ -1,6 +1,7 @@
 package dk.ms.SponsorsAndAgencies;
 
 import org.apache.commons.math.stat.descriptive.DescriptiveStatistics;
+import org.apache.commons.math.stat.descriptive.moment.*;
 
 public class TestMain {
 
@@ -26,22 +27,32 @@ public class TestMain {
 		// WriteMethod writeMethod = WriteMethod.TO_DATABASE;
 		WriteMethod writeMethod = WriteMethod.TO_FILE;
 		World world;
+		FirstMoment firstmoment;
+		SecondMoment secondmoment;
 		//
 		int ab = 1;
-		if(ab==2){
+		if(ab==1){
 			Utilities util = new Utilities();
+			firstmoment = new FirstMoment();
+			secondmoment = new SecondMoment();
 			DescriptiveStatistics stat;
 			stat = new DescriptiveStatistics();
 			stat.clear();
+			firstmoment.clear();
+			secondmoment.clear();
 			double[] dArray = new double[1000];
 			for (int j=0; j<25;j++){
 				for(int i = 0;i< 1000;i++){
-					dArray[i] = util.gaussian(10, 1.6667);
+					double number = util.gaussian(10, 1.6667);
+					firstmoment.increment(number);
+					secondmoment.increment(number);
+					dArray[i] = number;
 					stat.addValue(dArray[i]);
 					//	System.out.println(dArray[i]);
 				}
 
 				System.out.println("Kurtosis: " + (stat.getKurtosis() +3) + "\tSkewness: " + stat.getSkewness() + "\t\tdev:" + stat.getStandardDeviation());
+				System.out.println("mean: descriptive" + (stat.getMean()) + "\tMoment: " + firstmoment.getResult() + "\tsecond: " + ((FirstMoment)secondmoment).getResult());
 				
 			}
 		}
