@@ -2,6 +2,9 @@ package dk.ms.SponsorsAndAgencies;
 
 import org.apache.commons.math.stat.descriptive.DescriptiveStatistics;
 import org.apache.commons.math.stat.descriptive.moment.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import dk.ms.Statistics.*;
 
 public class TestMain {
 
@@ -29,6 +32,7 @@ public class TestMain {
 		World world;
 		FirstMoment firstmoment;
 		SecondMoment secondmoment;
+		Statistics statistics = new Statistics();
 		//
 		int ab = 1;
 		if(ab==1){
@@ -37,22 +41,24 @@ public class TestMain {
 			secondmoment = new SecondMoment();
 			DescriptiveStatistics stat;
 			stat = new DescriptiveStatistics();
-			stat.clear();
-			firstmoment.clear();
-			secondmoment.clear();
-			double[] dArray = new double[1000];
+			ArrayList<Double> data = new ArrayList<Double>();
 			for (int j=0; j<25;j++){
+				stat.clear();
+				firstmoment.clear();
+				secondmoment.clear();
+				data.clear();
 				for(int i = 0;i< 1000;i++){
-					double number = util.gaussian(10, 1.6667);
-					firstmoment.increment(number);
-					secondmoment.increment(number);
-					dArray[i] = number;
-					stat.addValue(dArray[i]);
-					//	System.out.println(dArray[i]);
+					double number = util.gaussian(10, 0.92);
+					data.add(number);              // populate data
+					
 				}
-
-				System.out.println("Kurtosis: " + (stat.getKurtosis() +3) + "\tSkewness: " + stat.getSkewness() + "\t\tdev:" + stat.getStandardDeviation());
-				System.out.println("mean: descriptive" + (stat.getMean()) + "\tMoment: " + firstmoment.getResult() + "\tsecond: " + ((FirstMoment)secondmoment).getResult());
+				Collections.sort(data);
+				statistics.setData(data);
+				statistics.calculate();
+			//	System.out.println("Kurtosis: " + (stat.getKurtosis() +3) + "\tSkewness: " + stat.getSkewness() + "\t\tdev:" + stat.getStandardDeviation());
+			//	System.out.println("mean: descriptive" + (stat.getMean()) + "\tMoment: " + firstmoment.getResult() + "\tsecond: " + ((FirstMoment)secondmoment).getResult());
+				
+				System.out.println(rpad(statistics.getMean(),25) + rpad(statistics.getLcv(),25) + rpad(statistics.getSkewness(),25) + rpad(statistics.getKurtosis(),25) );
 				
 			}
 		}
@@ -63,7 +69,7 @@ public class TestMain {
 					agencyRequirementSigma,sightOfAgency, pickRandomSponsor, writeMethod, moveRate);
 			world.orchestrateWorld();
 		}
-
+	}
 		//		world.initialise();
 		//		world.seekPotentialSponsors();
 		//		world.allocateSponsor();
@@ -72,6 +78,14 @@ public class TestMain {
 		//		world.writeAgencies();
 		//		world.removeExhaustedAgencies();
 		//		world.generateNewAgencies(); 
+	
+	public static String rpad(double inStr, int finalLength)
+	{
+	    return (inStr + "                 " // typically a sufficient length spaces string.
+	        ).substring(0, finalLength);
 	}
+	
+	
 
-}
+} // TestMain
+
