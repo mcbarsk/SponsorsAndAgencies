@@ -1,7 +1,6 @@
 package dk.ms.SponsorsAndAgencies;
 
-import org.apache.commons.math.stat.descriptive.DescriptiveStatistics;
-import org.apache.commons.math.stat.descriptive.moment.*;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import dk.ms.Statistics.*;
@@ -30,22 +29,13 @@ public class TestMain {
 		// WriteMethod writeMethod = WriteMethod.TO_DATABASE;
 		WriteMethod writeMethod = WriteMethod.TO_FILE;
 		World world;
-		FirstMoment firstmoment;
-		SecondMoment secondmoment;
 		Statistics statistics = new Statistics();
 		//
 		int ab = 1;
 		if(ab==1){
 			Utilities util = new Utilities();
-			firstmoment = new FirstMoment();
-			secondmoment = new SecondMoment();
-			DescriptiveStatistics stat;
-			stat = new DescriptiveStatistics();
 			ArrayList<Double> data = new ArrayList<Double>();
 			for (int j=0; j<25;j++){
-				stat.clear();
-				firstmoment.clear();
-				secondmoment.clear();
 				data.clear();
 				for(int i = 0;i< 1000;i++){
 					double number = util.gaussian(10, 0.92);
@@ -58,7 +48,8 @@ public class TestMain {
 			//	System.out.println("Kurtosis: " + (stat.getKurtosis() +3) + "\tSkewness: " + stat.getSkewness() + "\t\tdev:" + stat.getStandardDeviation());
 			//	System.out.println("mean: descriptive" + (stat.getMean()) + "\tMoment: " + firstmoment.getResult() + "\tsecond: " + ((FirstMoment)secondmoment).getResult());
 				
-				System.out.println(rpad(statistics.getMean(),25) + rpad(statistics.getLcv(),25) + rpad(statistics.getSkewness(),25) + rpad(statistics.getKurtosis(),25) );
+				System.out.println(rpad(statistics.getLMean(),23) + rpad(statistics.getLMean(),23) +  rpad(statistics.getLLcv(),23) + rpad(statistics.getLcv(),23) + 
+						           rpad(statistics.getLSkewness(),23) + rpad(statistics.getSkewness(),23) + rpad(statistics.getLKurtosis(),23) + rpad(statistics.getKurtosis(),23) );
 				
 			}
 		}

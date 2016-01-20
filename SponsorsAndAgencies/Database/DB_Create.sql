@@ -24,6 +24,7 @@ CREATE TABLE `agency_iterations` (
   `payout` double DEFAULT NULL,
   `cutdown` int(11) DEFAULT NULL,
   `iteration` int(11) NOT NULL,
+  `percentageDiff` double DEFAULT NULL,
   PRIMARY KEY (`idagency_iteration`),
   UNIQUE KEY `idx_agency_iterations_worldID_iteration_name` (`worldID`,`iteration`,`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
@@ -47,6 +48,7 @@ CREATE TABLE `sponsor_iterations` (
   `name` int(11) NOT NULL,
   `payoff` double DEFAULT NULL,
   `iteration` int(11) NOT NULL,
+    
   PRIMARY KEY (`idsponsor_iterations`),
   UNIQUE KEY `idx_sponsor_iterations_worldID_name_iteration` (`worldID`,`name`,`iteration`),
   KEY `idx_sponsor_iterations_worldID_name` (`worldID`,`name`)
