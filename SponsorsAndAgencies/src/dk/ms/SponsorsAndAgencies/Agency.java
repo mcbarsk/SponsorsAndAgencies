@@ -17,6 +17,7 @@ public class Agency implements Cloneable{
 	private double 		eyesight; // How far can an agency see
 	private ArrayList<Sponsor> possibleSponsors; 
 	private boolean		cutDown = true;
+	private double		savingsdifference = 0;
 
 	public Agency(Utilities util, String worldID, Timestamp creationDate, int name, int width, int height, double mu, double sigma, double eyesight, double moneyReserveFactor){
 		this.worldID 			= worldID;
@@ -38,37 +39,21 @@ public class Agency implements Cloneable{
 		}
 	}
 	// Simple getters
-	public Sponsor getSponsor(){return chosenSponsor;}
-
-	public double getMoneyLeft(){return savings;}
-
+	public Sponsor getSponsor()		{return chosenSponsor;}
+	public double getMoneyLeft()	{return savings;}
 	public ArrayList<Sponsor> getPossibleSponsors(){return possibleSponsors;}
-
-	public double getPayout(){return payout;}
-
-	public double getSavings(){return savings;}
-
-	public double getRisk(){return risk;}
-
-	public double getMoneyNeeded() {return moneyNeeded;}
-
-	public double getBudget() {return budget;}
-
-	public double getEyesight(){return eyesight;}
-
-	public int getName(){return name;}
-
-	public boolean getCutDown(){return cutDown;}
-
-	public String getWorldID(){return worldID;}
-
-	public Timestamp getCreationDate(){
-		return creationDate;
-	}
-
-	public boolean getBroke(){
-		return savings <= 0;
-	}
+	public double getPayout()		{return payout;}
+	public double getSavings()		{return savings;}
+	public double getRisk()			{return risk;}
+	public double getMoneyNeeded() 	{return moneyNeeded;}
+	public double getBudget() 		{return budget;}
+	public double getEyesight()		{return eyesight;}
+	public int getName()			{return name;}
+	public boolean getCutDown()		{return cutDown;}
+	public String getWorldID()		{return worldID;}
+	public Timestamp getCreationDate(){return creationDate;}
+	public boolean getBroke()		{return savings <= 0;}
+	public double getSavingsdiff()	{return savingsdifference;}
 
 	public final void addSponsor(Sponsor sponsor){
 		possibleSponsors.add(sponsor);
@@ -79,6 +64,7 @@ public class Agency implements Cloneable{
 	}
 
 	public void setSavings(final double savings) {
+		savingsdifference = ((savings - this.savings) / savings) * 100; // sets the percentage difference related to payout
 		this.savings = savings;
 	}
 
@@ -134,7 +120,7 @@ public class Agency implements Cloneable{
 	}
 
 	public void subtractsavings(double cutDown){
-		savings -= cutDown;
+		this.setSavings(savings - cutDown);
 	}
 
 	public boolean hasMoneyLeft(){

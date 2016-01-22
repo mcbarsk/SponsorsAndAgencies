@@ -13,7 +13,7 @@ public class WriterFile extends SponsorsAndAgenciesWriter{
 	private String headerFile; // filename of header
 	private String dataFile; // filename of actual data
 	private final char DELIMITER = ';'; 
-	private String header = "worldID" 					+ DELIMITER + 
+	private String header = "worldID" 	+ DELIMITER + 
 			"creationDate" 				+ DELIMITER +
 			"initialNumberOfSponsors" 	+ DELIMITER +
 			"initialNumberOfAgencies" 	+ DELIMITER + 
@@ -32,7 +32,7 @@ public class WriterFile extends SponsorsAndAgenciesWriter{
 			"pickRandomSponsor" 		+ DELIMITER +
 			"numberOfIterations";
 	private String headerLine;
-	private String dataHeader = "worldID" 				+ DELIMITER +
+	private String dataHeader = "worldID" + DELIMITER +
 			"iteration" 			+ DELIMITER + 
 			"sponsorName" 			+ DELIMITER + 
 			"sponsorPosX" 			+ DELIMITER + 
@@ -55,8 +55,7 @@ public class WriterFile extends SponsorsAndAgenciesWriter{
 	@Override
 	public void writeData(World world, ArrayList<Agency> agency, ArrayList<Sponsor> sponsor, int iteration) {
 		createDataLines(agency, sponsor, iteration);
-
-	}
+	} // writeData
 
 	@Override
 	public void prepare(World world) {
@@ -85,8 +84,13 @@ public class WriterFile extends SponsorsAndAgenciesWriter{
 			System.err.println(e);
 		}
 
-	}
-
+	} // prepare
+	
+	@Override
+	public void writeStatistics(World world){
+		
+	} // writeStatistics
+	
 	private void createHeaderLine(World world){
 		headerLine = 
 				world.getWorldID() 					+ DELIMITER + 
@@ -106,7 +110,7 @@ public class WriterFile extends SponsorsAndAgenciesWriter{
 				world.getMoveRate() 				+ DELIMITER +
 				(world.isPickRandomSponsor() ? "1" : "0") + DELIMITER +
 				world.getNumberOfIterations();
-	}
+	} // createHeaderLine
 
 	private void createDataLines(ArrayList<Agency> lAgencies, ArrayList<Sponsor> lSponsors, int iteration){
 		try(PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(dataFile, true)))) {

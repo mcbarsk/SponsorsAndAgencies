@@ -38,7 +38,8 @@ public class World {
 	private int					numberOfIterations			= 1000;
 	private int					totalNumberOfAgencies 		= 0; // singleton to ensure new agencies get a unique number
 	private WriteMethod			writeMethod;
-	private SponsorsAndAgenciesWriter	writer;				
+	private SponsorsAndAgenciesWriter	writer;	
+	private ArrayList<Double> statisticList = new ArrayList<Double>();
 	private NumberFormat		formatter = new DecimalFormat("#0.00000");
 	private Settings			settings; 
 	private long 				start;
@@ -115,23 +116,23 @@ public class World {
 
 	@Override public String toString(){return "worldID:" + worldID ;}
 	// Simple getters
-	public String getWorldID() {return worldID;}
-	public Timestamp getCreationDate() {return creationDate;}
+	public String getWorldID() 				{return worldID;}
+	public Timestamp getCreationDate() 		{return creationDate;}
 	public int getInitialNumberOfSponsors() {return initialNumberOfSponsors;}
 	public int getInitialNumberOfAgencies() {return initialNumberOfAgencies;}
-	public CutDownModel getCutDownModel() {return cutDownModel;}
-	public int[] getWorldSize() {return worldSize;}
-	public double getSponsorSigmaFactor() {return sponsorSigmaFactor;}
-	public double getSponsorMoney() {return sponsorMoney;}
-	public double getAgencyMoney() {return agencyMoney;}
+	public CutDownModel getCutDownModel() 	{return cutDownModel;}
+	public int[] getWorldSize() 			{return worldSize;}
+	public double getSponsorSigmaFactor() 	{return sponsorSigmaFactor;}
+	public double getSponsorMoney() 		{return sponsorMoney;}
+	public double getAgencyMoney() 			{return agencyMoney;}
 	public int getAgencyMoneyReserveFactor() {return agencyMoneyReserveFactor;}
-	public double getAgencySigmaFactor() {return agencySigmaFactor;}
+	public double getAgencySigmaFactor() 	{return agencySigmaFactor;}
 	public double getAgencyRequirementNeed() {return agencyRequirementNeed;}
 	public double getAgencyRequirementSigma() {return agencyRequirementSigma;}
-	public double getSightOfAgency() {return sightOfAgency;}
-	public double getMoveRate() {return moveRate;}
-	public boolean isPickRandomSponsor() {return pickRandomSponsor;}
-	public int getNumberOfIterations() {return numberOfIterations;}
+	public double getSightOfAgency() 		{return sightOfAgency;}
+	public double getMoveRate() 			{return moveRate;}
+	public boolean isPickRandomSponsor() 	{return pickRandomSponsor;}
+	public int getNumberOfIterations() 		{return numberOfIterations;}
 
 	public void initialise(){	// Step 1
 		//setstart();
@@ -175,7 +176,6 @@ public class World {
 
 
 	public void seekPotentialSponsors(){ // Step 2
-		// setstart();
 		for (int i=0; i<LAgencies.size();i++){
 			Agency agency = LAgencies.get(i);
 			agency.getPossibleSponsors().clear(); // start all over with new potential sponsors
@@ -186,8 +186,6 @@ public class World {
 					agency.addSponsor(sponsor);
 			}
 		}
-		//setend(); 
-		//log(start,end,"step2");
 	} // seekPotentialSponsors
 
 	public void allocateSponsor(){ // Step 3
@@ -221,14 +219,11 @@ public class World {
 	} // allocateSponsor
 
 	public void allocateFunding(){ // Step 4
-		//setstart();
 		resetCutDown();                           // initialises the agencies. 
 		for (int i=0; i < LSponsors.size();i++){
 			Sponsor sponsor = LSponsors.get(i);
 			Payout.payout(cutDownModel, sponsor);
 		}
-		//setend();
-		//log(start,end,"step4");
 	} // allocateFunding
 
 	public void spendBudget(){ // Step 5
@@ -236,11 +231,16 @@ public class World {
 			Agency agency = LAgencies.get(i);
 			agency.subtractsavings(agency.getMoneyNeeded() - agency.getPayout());
 		}
-		//log(start,end,"step5");
 	} // spendBudget
-
+	
+	public void obtainStatisticData(){
+		for (int i=0;i<LAgencies.size();i++){
+			Agency agency = LAgencies.get(i);
+			statisticList.add(agency.getSavingsdiff());
+		}
+	}
+	
 	public void removeExhaustedAgencies(){ // Step 6
-		//setstart();
 		Agency agency;
 		ArrayList<Agency> tmpList = new ArrayList<Agency>(LAgencies); // tmplist created, so removal of entries doesn't affect the loop
 		for (int i=0;i<tmpList.size();i++){
@@ -251,12 +251,9 @@ public class World {
 				LAgencies.remove(agency);              // remove the agency from the global container.
 			}
 		}
-		//setend();
-		//log(start,end,"step6");
 	} // removeExhaustedAgencies
 
 	public int generateNewAgencies(){ // Step 7
-		//setstart();
 		double totalSponsorMoney = 0;
 		double totalAgencyRequirement = 0; //  
 		int i;
@@ -283,8 +280,6 @@ public class World {
 
 		}
 		return newAgencies;
-		//setend();
-		//log(start,end,"step7)");
 	} // generateNewAgencies
 
 	public void setBudgetRequirements(){ // Step 8
@@ -304,45 +299,24 @@ public class World {
 		for (int j=0;j<LSponsors.size();j++){
 			LSponsors.get(j).setPayoff(0);
 		}
-		//setend();
-		//log(start,end,"step8");
 	}
 
 	public void orchestrateWorld(){
 		/* This method arranges all the steps and iterates.
 		 */
-		setstart();
-		logging(1,1);
 		initialise();
-		logging(2,1);
+		setstart();
 		for (int i=1;i<=numberOfIterations;i++){
-			logging(1,2);
 			seekPotentialSponsors();
-			logging(2,2);
-			logging(1,3);
 			allocateSponsor();
-			logging(2,3);
-			logging(1,4);
 			allocateFunding();
-			logging(2,4);
-			logging(1,5);
 			spendBudget();
-			logging(2,5);
-			logging(1,6);
+			obtainStatisticData();
 			write(i);
-			logging(2,6);
-			logging(1,7);
 			removeExhaustedAgencies();
-			logging(2,7);
-			logging(1,8);
 			generateNewAgencies();
-			logging(2,8);
-			logging(1,9);
 			setBudgetRequirements();
-			logging(2,9);
-			logging(1,10);
 			move();
-			logging(2,10);
 		}
 		setend();
 		log(start,end,"iteration:" + numberOfIterations);

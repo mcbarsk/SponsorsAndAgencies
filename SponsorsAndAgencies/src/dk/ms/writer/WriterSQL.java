@@ -54,6 +54,11 @@ public class WriterSQL extends SponsorsAndAgenciesWriter{
 	}
 
 	@Override
+	public void writeStatistics(World world){
+		
+	} // writeStatistics
+	
+	@Override
 	public void writeData(World world, ArrayList<Agency> lagency, ArrayList<Sponsor> lsponsor, int iteration){
 		try{
 			connect(world);
@@ -85,8 +90,6 @@ public class WriterSQL extends SponsorsAndAgenciesWriter{
 				conn.setAutoCommit(false);
 			}
 		}catch(Exception e){e.printStackTrace();}
-
-
 	} // connect
 	
 	public void closeConnection(){
@@ -95,7 +98,7 @@ public class WriterSQL extends SponsorsAndAgenciesWriter{
 				conn.close();
 			}
 		}catch(Exception e){e.printStackTrace();}
-	}
+	} // closeConnection
 
 	/** Opens up a connection against the database and writes a single world record.
 	 *  It leaves the connection open, so either invoke writeData or use the public method to close the 
@@ -140,8 +143,8 @@ public class WriterSQL extends SponsorsAndAgenciesWriter{
 				e.printStackTrace();
 			}};
 		}
-
-	}
+	} // prepare
+	
 	private void writeSponsorIterations(ArrayList<Sponsor> lsponsor, int iteration){
 		Sponsor sponsor;
 		//stmt = conn.prepareStatement(InsertQRY, Statement.RETURN_GENERATED_KEYS); // used if keys are interesting
@@ -181,7 +184,8 @@ public class WriterSQL extends SponsorsAndAgenciesWriter{
 					stmt.close();
 			} catch(SQLException sqlex){sqlex.printStackTrace();}
 		}	
-	}
+	} // writeSponsorIterations
+	
 	private void writeAgency(ArrayList<Agency> lagency, int iteration){
 		Agency agency;
 		try {stmt = conn.prepareStatement(AGENCY_INSERT); 
