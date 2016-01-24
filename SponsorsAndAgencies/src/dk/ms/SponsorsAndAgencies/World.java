@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.UUID;
 
-import org.apache.commons.math.stat.descriptive.DescriptiveStatistics;
 
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
 import dk.ms.SponsorsAndAgencies.Utilities;
+import dk.ms.Statistics.Statistics;
 import dk.ms.writer.*;
 
 
@@ -37,6 +37,7 @@ public class World {
 	private boolean				pickRandomSponsor			= false;
 	private int					numberOfIterations			= 1000;
 	private int					totalNumberOfAgencies 		= 0; // singleton to ensure new agencies get a unique number
+	private double 				budgetIncrease				= 1.02;
 	private WriteMethod			writeMethod;
 	private SponsorsAndAgenciesWriter	writer;	
 	private ArrayList<Double> statisticList = new ArrayList<Double>();
@@ -63,12 +64,13 @@ public class World {
 			double sightOfAgency,
 			boolean pickRandomSponsor,
 			WriteMethod writeMethod,
-			double moveRate
+			double moveRate,
+			double budgetIncrease
 			){
 		// Validation
 		if(numberOfIterations < 1)
 			throw new IllegalArgumentException("Number of iterations must be > 0");
-		if(moveRate > 1 || moveRate < 0)
+		if(Double.compare(moveRate, 1) > 0 || Double.compare(moveRate,0) < 0)
 			throw new IllegalArgumentException("MoveRate must be in the range [0..1]");
 		if(initialNumberOfSponsors < 1)
 			throw new IllegalArgumentException("Number of sponsors must be > 0");
@@ -100,6 +102,7 @@ public class World {
 		this.pickRandomSponsor			= pickRandomSponsor;
 		this.moveRate					= moveRate;
 		this.writeMethod				= writeMethod;
+		this.budgetIncrease				= budgetIncrease;
 		switch (writeMethod){
 		case TO_DATABASE:
 			writer = new WriterSQL();
@@ -144,7 +147,8 @@ public class World {
 		if (initialNumberOfAgencies > 0){
 			for(int i = 0; i<initialNumberOfAgencies;i++){
 				Agency agency;
-				agency = new Agency(agencyUtilities,worldID,creationDate,i,worldSize[0],worldSize[1], agencyMoney,agencyMoney/agencySigmaFactor,sightOfAgency, agencyMoneyReserveFactor);
+				agency = new Agency(agencyUtilities,worldID,creationDate,i,worldSize[0],worldSize[1], agencyMoney,agencyMoney/agencySigmaFactor,
+								    sightOfAgency, agencyMoneyReserveFactor, budgetIncrease);
 				double budget = agency.getBudget();
 				agency.setMoneyNeeded(agencyUtilities, budget * agencyRequirementNeed, budget * agencyRequirementSigma);
 				LAgencies.add(agency);
@@ -233,7 +237,7 @@ public class World {
 		}
 	} // spendBudget
 	
-	public void obtainStatisticData(){
+	public void storeStatisticData(){
 		for (int i=0;i<LAgencies.size();i++){
 			Agency agency = LAgencies.get(i);
 			statisticList.add(agency.getSavingsdiff());
@@ -274,7 +278,8 @@ public class World {
 		for (i=1;i<newAgencies;i++){
 			Agency agency;
 			totalNumberOfAgencies += 1;
-			agency = new Agency(agencyUtilities,worldID, creationDate,totalNumberOfAgencies,worldSize[0],worldSize[1], agencyMoney,agencyMoney/agencySigmaFactor,sightOfAgency, agencyMoneyReserveFactor);
+			agency = new Agency(agencyUtilities,worldID, creationDate,totalNumberOfAgencies,worldSize[0],worldSize[1], agencyMoney,agencyMoney/agencySigmaFactor,sightOfAgency, 
+								agencyMoneyReserveFactor, budgetIncrease);
 			agency.setMoneyNeeded(agencyUtilities, avgBudget, avgBudget * 0.02);
 			LAgencies.add(agency);
 
@@ -290,14 +295,8 @@ public class World {
 		final double SIGMA = 0.02;
 		for (int i=0;i< LAgencies.size();i++){
 			Agency agency = LAgencies.get(i);
-			agency.setNewBudget(agencyUtilities, MU,SIGMA);
+			agency.setNewBudget(agencyUtilities, MU,SIGMA); // completely new budget or increase as per rate?
 			agency.setMoneyNeeded(agencyUtilities, agency.getBudget() * agencyRequirementNeed, agency.getBudget() * agencyRequirementSigma);
-		}
-		/* Now payoff is reset for all sponsors
-		 * 
-		 */
-		for (int j=0;j<LSponsors.size();j++){
-			LSponsors.get(j).setPayoff(0);
 		}
 	}
 
@@ -311,15 +310,28 @@ public class World {
 			allocateSponsor();
 			allocateFunding();
 			spendBudget();
-			obtainStatisticData();
+			storeStatisticData();
 			write(i);
 			removeExhaustedAgencies();
 			generateNewAgencies();
 			setBudgetRequirements();
 			move();
+			cleanupActivities();
 		}
+		calculateStatistics();
 		setend();
 		log(start,end,"iteration:" + numberOfIterations);
+	}
+	
+	public void cleanupActivities(){
+		// Payoff is reset for all sponsors
+		for (int j=0;j<LSponsors.size();j++){
+			LSponsors.get(j).setPayoff(0);
+		}
+		for (int i=0;i<LAgencies.size();i++){
+			Agency agency = LAgencies.get(i);
+			agency.clearSavingsDifference();
+		}
 	}
 	public void write(int iteration){
 		if (writer != null){
@@ -329,7 +341,7 @@ public class World {
 		}
 		else
 			for (int i=0;i<LAgencies.size();i++){
-				System.out.println(LAgencies.get(i).getPayout());
+				//System.out.println(LAgencies.get(i).getPayout());
 			}
 	} // write
 
@@ -475,6 +487,22 @@ public class World {
 			}
 		} // moveCloserToSponsor
 	} // class Moving
+	
+	public void calculateStatistics(){
+		Statistics statistics = new Statistics();
+		statistics.setData(statisticList);
+		statistics.calculate();
+		log(1,1,"mean :" + statistics.getMean());
+		log(1,1,"lcv :" + statistics.getLcv());
+		log(1,1,"Skew :" + statistics.getSkewness());
+		log(1,1,"Kurtosis :" + statistics.getKurtosis());
+		log(1,1,"Lmean :" + statistics.getLMean());
+		log(1,1,"lLcv :" + statistics.getLLcv());
+		log(1,1,"LSkew :" + statistics.getLSkewness());
+		log(1,1,"LKurtosis :" + statistics.getLKurtosis());
+		
+	}
+	
 	/* 
 	 * Following is a set of private classes which helps make different types of calculation. 
 	 * If new enum values are created, this is the place to implement the corresponding code.

@@ -18,8 +18,11 @@ public class Agency implements Cloneable{
 	private ArrayList<Sponsor> possibleSponsors; 
 	private boolean		cutDown = true;
 	private double		savingsdifference = 0;
+	private double		budgetIncrease = 1; // factor for budget increase per iteration
 
-	public Agency(Utilities util, String worldID, Timestamp creationDate, int name, int width, int height, double mu, double sigma, double eyesight, double moneyReserveFactor){
+	public Agency(Utilities util, String worldID, Timestamp creationDate, int name, int width, int height, 
+				  double mu, double sigma, double eyesight, double moneyReserveFactor,
+				  double budgetIncrease){
 		this.worldID 			= worldID;
 		this.creationDate		= creationDate;
 		this.name 				= name;
@@ -29,6 +32,7 @@ public class Agency implements Cloneable{
 		this.savings 			= this.budget * moneyReserveFactor;
 		this.possibleSponsors 	= new ArrayList<Sponsor>();
 		this.eyesight 			= eyesight;
+		this.budgetIncrease		= budgetIncrease;
 	} // Constructor
 
 	public Object clone(){
@@ -64,31 +68,28 @@ public class Agency implements Cloneable{
 	}
 
 	public void setSavings(final double savings) {
-		savingsdifference = ((savings - this.savings) / savings) * 100; // sets the percentage difference related to payout
+		savingsdifference = -1 * ((this.savings - savings) / this.savings) * 100; // sets the percentage difference related to payout
+		// the minus one is in order to have a positive increase if new savings > old savings.
 		this.savings = savings;
 	}
 
 
 	public void setMoneyNeeded(Utilities util, double mu, double sigma) {
-		moneyNeeded = util.gaussian(mu, sigma);
+		double result = -1;
+		while (result<0)
+			result = util.gaussian(mu, sigma);
+		moneyNeeded = result;
 	}
 	
 	public void setNewBudget(Utilities util, double mu, double sigma){
-		this.budget = this.budget *util.gaussian(mu, sigma);
+		double result = -1;
+		while (result<0)
+			result = this.budget *util.gaussian(mu, sigma);
+		this.budget = result;
 	}
 
-	/** comparison of budgets between another agency and this
-	 * @param agency
-	 * @return -1 if other budget is larger than this, 0 if they are equal and 1 if this budget is larger than the other's
-	 */
-	public int compare(Agency agency){
-		double a = this.getBudget();
-		double b = agency.getBudget();
-		int i = 0;
-		if (a<b)  i = -1;
-		if (a==b) i =  0;
-		if (a>b)  i =  1;
-		return i;
+	public void clearSavingsDifference(){
+		savingsdifference = 0;
 	}
 
 	public void setPayout(double payout){
@@ -128,7 +129,7 @@ public class Agency implements Cloneable{
 	}
 
 	public void newBudget(){
-		budget = budget * 1.02;
+		budget = budget * budgetIncrease;
 	}
 
 

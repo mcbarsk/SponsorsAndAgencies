@@ -9,11 +9,11 @@ public class TestMain {
 
 	public static void main(String[] args) {
 
-		int numberOfIterations			= 1000;
+		int numberOfIterations			= 100;
 		int initialNumberOfSponsors 	= 50;
-		int initialNumberOfAgencies 	= 270;
-		// CutDownModel cm 				= CutDownModel.SAME_PERCENTAGE_RATE;
-		CutDownModel cm 				= CutDownModel.PROBABILITY_CALCULATION;
+		int initialNumberOfAgencies 	= 100;
+		CutDownModel cm 				= CutDownModel.SAME_PERCENTAGE_RATE;
+		// CutDownModel cm 				= CutDownModel.PROBABILITY_CALCULATION;
 		int[] ws 						= {5,5};
 		double sponsorSigmaFactor 		= 6; 
 		double sponsorMoney 			= 50;
@@ -25,13 +25,14 @@ public class TestMain {
 		double sightOfAgency 			= 2;
 		boolean pickRandomSponsor 		= false;
 		double moveRate					= 0.5;
+		double budgetIncrease			= 1.02;
 		// WriteMethod writeMethod = WriteMethod.NONE;
-		// WriteMethod writeMethod = WriteMethod.TO_DATABASE;
-		WriteMethod writeMethod = WriteMethod.TO_FILE;
+		 WriteMethod writeMethod = WriteMethod.TO_DATABASE;
+		// WriteMethod writeMethod = WriteMethod.TO_FILE;
 		World world;
 		Statistics statistics = new Statistics();
 		//
-		int ab = 1;
+		int ab = 2;
 		if(ab==1){
 			Utilities util = new Utilities();
 			ArrayList<Double> data = new ArrayList<Double>();
@@ -57,7 +58,8 @@ public class TestMain {
 			world = new World(numberOfIterations, initialNumberOfSponsors,initialNumberOfAgencies, 
 					cm, ws,sponsorSigmaFactor, sponsorMoney, agencyMoney,agencyMoneyReserveFactor,
 					agencySigmaFactor,agencyRequirementNeed,
-					agencyRequirementSigma,sightOfAgency, pickRandomSponsor, writeMethod, moveRate);
+					agencyRequirementSigma,sightOfAgency, pickRandomSponsor, writeMethod, moveRate,
+					budgetIncrease);
 			world.orchestrateWorld();
 		}
 	}

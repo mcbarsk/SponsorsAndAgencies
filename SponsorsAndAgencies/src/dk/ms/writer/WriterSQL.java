@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import dk.ms.SponsorsAndAgencies.Agency;
 import dk.ms.SponsorsAndAgencies.Sponsor;
 import dk.ms.SponsorsAndAgencies.World;
+import dk.ms.Statistics.Statistics;
 
 /**
  * This class connects to a MySQL database and handles all database access.
@@ -28,8 +29,8 @@ public class WriterSQL extends SponsorsAndAgenciesWriter{
 	private final String AGENCY_IT_INSERT = "INSERT INTO sponsors_agencies.agency_iterations (worldID, name," +  
 			"chosenSponsor,budget,moneyNeeded," + 
 			"savings,position_x,position_y," + 
-			"payout,cutdown,iteration) " +  
-			"VALUES (?,?,?,?,?,?,?,?,?,?,?)";
+			"payout,cutdown,iteration, percentageCut) " +  
+			"VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
 	private final String SPONSOR_INSERT = "INSERT INTO sponsors_agencies.sponsors (worldID, creationDate, name," + 
 			"position_x,position_y,money)" +
 			"VALUES(?,?,?,?,?,?)";
@@ -54,7 +55,7 @@ public class WriterSQL extends SponsorsAndAgenciesWriter{
 	}
 
 	@Override
-	public void writeStatistics(World world){
+	public void writeStatistics(World world, Statistics statistics){
 		
 	} // writeStatistics
 	
@@ -200,7 +201,7 @@ public class WriterSQL extends SponsorsAndAgenciesWriter{
 					stmt.setDouble    (5, agency.getEyesight());
 					lastAgencyWritten = agency.getName();
 					stmt.addBatch();
-				}
+				}		// The agencies were written. Now follows the iteration-specific data
 				int sponsorname = -1;
 				if (agency.getSponsor() == null)
 					sponsorname = -1;
@@ -218,6 +219,7 @@ public class WriterSQL extends SponsorsAndAgenciesWriter{
 				stmt2.setDouble  (9, agency.getPayout());
 				stmt2.setInt    (10, cutDown);
 				stmt2.setInt    (11,iteration);
+				stmt2.setDouble(12, agency.getSavingsdiff());
 				//stmt.setTimestamp(12, beggar.getWorldID());
 				stmt2.addBatch();
 			}

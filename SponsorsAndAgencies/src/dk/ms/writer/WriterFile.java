@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import dk.ms.SponsorsAndAgencies.Agency;
 import dk.ms.SponsorsAndAgencies.Sponsor;
 import dk.ms.SponsorsAndAgencies.World;
+import dk.ms.Statistics.Statistics;
 
 public class WriterFile extends SponsorsAndAgenciesWriter{
 	private String headerFile; // filename of header
@@ -17,7 +18,6 @@ public class WriterFile extends SponsorsAndAgenciesWriter{
 			"creationDate" 				+ DELIMITER +
 			"initialNumberOfSponsors" 	+ DELIMITER +
 			"initialNumberOfAgencies" 	+ DELIMITER + 
-			"moveSetting" 				+ DELIMITER +
 			"cutDownModel" 				+ DELIMITER +
 			"worldSize" 				+ DELIMITER +
 			"sponsorSigmaFactor" 		+ DELIMITER +
@@ -46,7 +46,8 @@ public class WriterFile extends SponsorsAndAgenciesWriter{
 			"agencyPayOut"			+ DELIMITER + 
 			"moneyNeeded"			+ DELIMITER + 
 			"savings"				+ DELIMITER + 
-			"cutdown";
+			"cutdown"				+ DELIMITER +
+			"percentageCut";
 
 	private String dataLine;
 	private PrintWriter pw;
@@ -87,7 +88,7 @@ public class WriterFile extends SponsorsAndAgenciesWriter{
 	} // prepare
 	
 	@Override
-	public void writeStatistics(World world){
+	public void writeStatistics(World world, Statistics statistics){
 		
 	} // writeStatistics
 	
@@ -120,21 +121,22 @@ public class WriterFile extends SponsorsAndAgenciesWriter{
 			Agency agency = lAgencies.get(i);
 			Sponsor sponsor = agency.getSponsor();
 			dataLine = 
-					agency.getWorldID()		+ DELIMITER +
-					iteration 				+ DELIMITER + 
+					agency.getWorldID()									+ DELIMITER +
+					iteration 											+ DELIMITER + 
 					(sponsor != null ? sponsor.getName() : "") 			+ DELIMITER + 
-					(sponsor != null ? sponsor.getPosition()[0] : "") 			+ DELIMITER +
-					(sponsor != null ? sponsor.getPosition()[1] : "") 			+ DELIMITER +
-					agency.getPosition()[0]  			+ DELIMITER +
-					agency.getPosition()[1]  			+ DELIMITER +
+					(sponsor != null ? sponsor.getPosition()[0] : "") 	+ DELIMITER +
+					(sponsor != null ? sponsor.getPosition()[1] : "") 	+ DELIMITER +
+					agency.getPosition()[0]  							+ DELIMITER +
+					agency.getPosition()[1]  							+ DELIMITER +
 					(sponsor != null ? sponsor.getMoney() : "")			+ DELIMITER +
-					(sponsor != null ? sponsor.getPayoff() : "")			+ DELIMITER + 
-					agency.getName() 					+ DELIMITER + 
-					agency.getBudget() 					+ DELIMITER + 
-					agency.getPayout()			+ DELIMITER + 
-					agency.getMoneyNeeded()			+ DELIMITER + 
-					agency.getSavings()				+ DELIMITER + 
-					(agency.getCutDown() ? 1:0);
+					(sponsor != null ? sponsor.getPayoff() : "")		+ DELIMITER + 
+					agency.getName() 									+ DELIMITER + 
+					agency.getBudget() 									+ DELIMITER + 
+					agency.getPayout()									+ DELIMITER + 
+					agency.getMoneyNeeded()								+ DELIMITER + 
+					agency.getSavings()									+ DELIMITER + 
+					(agency.getCutDown() ? 1:0)							+ DELIMITER +
+					agency.getSavingsdiff();
 			pw.println(dataLine);
 			
 		}

@@ -50,7 +50,7 @@ public class Statistics {
 		int size = data.size();
 		for (int i=0;i<size;i++)
 			descStat.addValue(data.get(i));
-	}
+	} // setData
 	
 	public void calculate(){
 		
@@ -85,7 +85,6 @@ public class Statistics {
 			beta2 += XValue * ( ( (double)(i-1)*(double)(i-2) ) / denominatorBeta2  ); // SUM:Xj[(j-1)(j-2)]/[(n-1)(n-2)]
 			beta3 += XValue * ( ( (double)(i-1)*(double)(i-2)*(double)(i-3) ) / denominatorBeta3) ; // SUM:Xj[(j-1)(j-2)(j-3)]/[(n-1)(n-2)(n-3)]
 		}
-		beta0 += data.get(0); // as the for loop does not provide the first value
 		beta0 = beta0/size;
 		beta1 = beta1/size;
 		beta2 = beta2/size;
