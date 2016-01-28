@@ -1,4 +1,4 @@
-package dk.ms.SponsorsAndAgencies;
+package dk.ms.SponsorsAndAgenciesControl;
 
 
 import java.sql.Timestamp;

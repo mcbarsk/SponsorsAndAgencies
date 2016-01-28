@@ -1,9 +1,9 @@
-package dk.ms.writer;
+package dk.ms.SponsorsAndAgenciesModel.Writer;
 import java.util.ArrayList;
 
-import dk.ms.SponsorsAndAgencies.Agency;
-import dk.ms.SponsorsAndAgencies.Sponsor;
-import dk.ms.SponsorsAndAgencies.World;
+import dk.ms.SponsorsAndAgenciesControl.Agency;
+import dk.ms.SponsorsAndAgenciesControl.Sponsor;
+import dk.ms.SponsorsAndAgenciesControl.World;
 import dk.ms.Statistics.Statistics;
 
 

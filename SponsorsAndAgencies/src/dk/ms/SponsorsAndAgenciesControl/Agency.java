@@ -1,4 +1,4 @@
-package dk.ms.SponsorsAndAgencies;
+package dk.ms.SponsorsAndAgenciesControl;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 public class Agency implements Cloneable{
@@ -22,17 +22,21 @@ public class Agency implements Cloneable{
 
 	public Agency(Utilities util, String worldID, Timestamp creationDate, int name, int width, int height, 
 				  double mu, double sigma, double eyesight, double moneyReserveFactor,
-				  double budgetIncrease){
+				  double budgetIncrease, double risk){
 		this.worldID 			= worldID;
 		this.creationDate		= creationDate;
 		this.name 				= name;
 		this.chosenSponsor 		= null;
 		this.position 			= new double[] {width*Math.random(), height*Math.random()};
-		this.budget 			= util.gaussian(mu, sigma);
+		double tmp = -1;
+		while(tmp<0)
+			tmp = util.gaussian(mu, sigma);
+		this.budget 			= tmp;
 		this.savings 			= this.budget * moneyReserveFactor;
 		this.possibleSponsors 	= new ArrayList<Sponsor>();
 		this.eyesight 			= eyesight;
 		this.budgetIncrease		= budgetIncrease;
+		this.risk				= risk;
 	} // Constructor
 
 	public Object clone(){

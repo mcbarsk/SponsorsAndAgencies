@@ -1,4 +1,4 @@
-package dk.ms.SponsorsAndAgencies;
+package dk.ms.SponsorsAndAgenciesControl;
 import java.util.Random; 
 
 public class Utilities {

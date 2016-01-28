@@ -1,13 +1,13 @@
-package dk.ms.writer;
+package dk.ms.SponsorsAndAgenciesModel.Writer;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 
-import dk.ms.SponsorsAndAgencies.Agency;
-import dk.ms.SponsorsAndAgencies.Sponsor;
-import dk.ms.SponsorsAndAgencies.World;
+import dk.ms.SponsorsAndAgenciesControl.Agency;
+import dk.ms.SponsorsAndAgenciesControl.Sponsor;
+import dk.ms.SponsorsAndAgenciesControl.World;
 import dk.ms.Statistics.Statistics;
 
 public class WriterFile extends SponsorsAndAgenciesWriter{
@@ -65,8 +65,8 @@ public class WriterFile extends SponsorsAndAgenciesWriter{
 		 */
 		if (world == null)
 			throw new NullPointerException("Missing world object");
-		headerFile = world.getPath() + world.getWorldID() + " - Header" + ".csv";
-		dataFile = world.getPath() + world.getWorldID() + " - Data" + ".csv";
+		headerFile = world.getSettings().getPath() + world.getWorldID() + " - Header" + ".csv";
+		dataFile = world.getSettings().getPath() + world.getWorldID() + " - Data" + ".csv";
 
 		try(PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(headerFile)))) {
 			this.pw = writer;

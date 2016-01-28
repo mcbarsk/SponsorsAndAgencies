@@ -5,4 +5,4 @@
  * @author Mark
  *
  */
-package dk.ms.writer;
+package dk.ms.SponsorsAndAgenciesModel.Writer;

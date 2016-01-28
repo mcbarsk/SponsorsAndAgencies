@@ -1,4 +1,4 @@
-package dk.ms.SponsorsAndAgencies;
+package dk.ms.SponsorsAndAgenciesControl;
 
 
 import java.util.ArrayList;
@@ -12,8 +12,8 @@ public class TestMain {
 		int numberOfIterations			= 100;
 		int initialNumberOfSponsors 	= 50;
 		int initialNumberOfAgencies 	= 100;
-		CutDownModel cm 				= CutDownModel.SAME_PERCENTAGE_RATE;
-		// CutDownModel cm 				= CutDownModel.PROBABILITY_CALCULATION;
+		// CutDownModel cm 				= CutDownModel.SAME_PERCENTAGE_RATE;
+		 CutDownModel cm 				= CutDownModel.PROBABILITY_CALCULATION;
 		int[] ws 						= {5,5};
 		double sponsorSigmaFactor 		= 6; 
 		double sponsorMoney 			= 50;
@@ -26,8 +26,10 @@ public class TestMain {
 		boolean pickRandomSponsor 		= false;
 		double moveRate					= 0.5;
 		double budgetIncrease			= 1.02;
-		// WriteMethod writeMethod = WriteMethod.NONE;
-		 WriteMethod writeMethod = WriteMethod.TO_DATABASE;
+		double baseRisk					= 0.25;
+		 WriteMethod writeMethod = WriteMethod.NONE;
+		 Settings settings = new Settings();
+		// WriteMethod writeMethod = WriteMethod.TO_DATABASE;
 		// WriteMethod writeMethod = WriteMethod.TO_FILE;
 		World world;
 		Statistics statistics = new Statistics();
@@ -59,7 +61,11 @@ public class TestMain {
 					cm, ws,sponsorSigmaFactor, sponsorMoney, agencyMoney,agencyMoneyReserveFactor,
 					agencySigmaFactor,agencyRequirementNeed,
 					agencyRequirementSigma,sightOfAgency, pickRandomSponsor, writeMethod, moveRate,
-					budgetIncrease);
+					budgetIncrease,baseRisk,settings);
+				listener thr ; //= new listener();
+				thr = new listener();
+				thr.run();
+				world.addListener(thr);
 			world.orchestrateWorld();
 		}
 	}
@@ -78,7 +84,11 @@ public class TestMain {
 	        ).substring(0, finalLength);
 	}
 	
-	
+	public static class listener extends Thread implements publishProgress {
+		public void getProgress(String msg){
+			System.out.println(msg);
+		};
+	};
 
 } // TestMain
 

@@ -1,7 +1,8 @@
-package dk.ms.SponsorsAndAgencies;
+package dk.ms.SponsorsAndAgenciesControl;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 
@@ -9,10 +10,11 @@ import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
-import dk.ms.SponsorsAndAgencies.Utilities;
+import dk.ms.SponsorsAndAgenciesControl.Utilities;
+import dk.ms.SponsorsAndAgenciesModel.Writer.SponsorsAndAgenciesWriter;
+import dk.ms.SponsorsAndAgenciesModel.Writer.WriterFile;
+import dk.ms.SponsorsAndAgenciesModel.Writer.WriterSQL;
 import dk.ms.Statistics.Statistics;
-import dk.ms.writer.*;
-
 
 public class World {
 	private String 				worldID;
@@ -38,6 +40,7 @@ public class World {
 	private int					numberOfIterations			= 1000;
 	private int					totalNumberOfAgencies 		= 0; // singleton to ensure new agencies get a unique number
 	private double 				budgetIncrease				= 1.02;
+	private double 				baseRisk					= 0.25;
 	private WriteMethod			writeMethod;
 	private SponsorsAndAgenciesWriter	writer;	
 	private ArrayList<Double> statisticList = new ArrayList<Double>();
@@ -47,7 +50,16 @@ public class World {
 	private long				end;
 	private long 				start1; // just for logging performance
 	private long				end1;   // just for logging performance
-	private boolean 			log = false; // true if runtime output to console.			 
+	private boolean 			log = false; // true if runtime output to console.	
+	private List<publishProgress> listeners = new ArrayList<publishProgress>();   // to publish iterations
+	private int 				actualIteration = -1;
+	private double 				mean;
+	private double 				lcv;
+	private double				skewness;
+	private double				kurtosis;
+	private double				L_lcv;
+	private double 				L_skewness;
+	private double 				L_kurtosis;
 	
 	public World(int numberOfIterations,
 			int initialNumberOfSponsors, 
@@ -65,7 +77,9 @@ public class World {
 			boolean pickRandomSponsor,
 			WriteMethod writeMethod,
 			double moveRate,
-			double budgetIncrease
+			double budgetIncrease,
+			double baseRisk,
+			Settings settings
 			){
 		// Validation
 		if(numberOfIterations < 1)
@@ -103,6 +117,7 @@ public class World {
 		this.moveRate					= moveRate;
 		this.writeMethod				= writeMethod;
 		this.budgetIncrease				= budgetIncrease;
+		this.baseRisk					= baseRisk;
 		switch (writeMethod){
 		case TO_DATABASE:
 			writer = new WriterSQL();
@@ -113,8 +128,10 @@ public class World {
 		case NONE:
 			writer = null;
 		}
-		settings 						= new Settings();
-		
+		if(settings == null)
+			this.settings				= new Settings();
+		else 
+			this.settings 				= settings;
 	}; // World
 
 	@Override public String toString(){return "worldID:" + worldID ;}
@@ -136,6 +153,16 @@ public class World {
 	public double getMoveRate() 			{return moveRate;}
 	public boolean isPickRandomSponsor() 	{return pickRandomSponsor;}
 	public int getNumberOfIterations() 		{return numberOfIterations;}
+	public double getBudgetIncrease() 		{return budgetIncrease;}
+	public double getBaseRisk() 			{return baseRisk;}
+	public double getMean() 				{return mean;}
+	public double getLcv() 					{return lcv;}
+	public double getSkewness() 			{return skewness;}
+	public double getKurtosis() 			{return kurtosis;}
+	public double getL_lcv() 				{return L_lcv;}
+	public double getL_skewness() 			{return L_skewness;}
+	public double getL_kurtosis() 			{return L_kurtosis;}
+	public Settings getSettings()			{return settings;}
 
 	public void initialise(){	// Step 1
 		//setstart();
@@ -148,7 +175,7 @@ public class World {
 			for(int i = 0; i<initialNumberOfAgencies;i++){
 				Agency agency;
 				agency = new Agency(agencyUtilities,worldID,creationDate,i,worldSize[0],worldSize[1], agencyMoney,agencyMoney/agencySigmaFactor,
-								    sightOfAgency, agencyMoneyReserveFactor, budgetIncrease);
+								    sightOfAgency, agencyMoneyReserveFactor, budgetIncrease, baseRisk);
 				double budget = agency.getBudget();
 				agency.setMoneyNeeded(agencyUtilities, budget * agencyRequirementNeed, budget * agencyRequirementSigma);
 				LAgencies.add(agency);
@@ -177,7 +204,6 @@ public class World {
 	private double distance(Sponsor sponsor, Agency agency){ // calculate distance between sponsor and agency
 		return Utilities.distance(agency.getPosition()[0],agency.getPosition()[1],sponsor.getPosition()[0],sponsor.getPosition()[1]); 
 	}; // distance	
-
 
 	public void seekPotentialSponsors(){ // Step 2
 		for (int i=0; i<LAgencies.size();i++){
@@ -279,7 +305,7 @@ public class World {
 			Agency agency;
 			totalNumberOfAgencies += 1;
 			agency = new Agency(agencyUtilities,worldID, creationDate,totalNumberOfAgencies,worldSize[0],worldSize[1], agencyMoney,agencyMoney/agencySigmaFactor,sightOfAgency, 
-								agencyMoneyReserveFactor, budgetIncrease);
+								agencyMoneyReserveFactor, budgetIncrease, baseRisk);
 			agency.setMoneyNeeded(agencyUtilities, avgBudget, avgBudget * 0.02);
 			LAgencies.add(agency);
 
@@ -306,6 +332,7 @@ public class World {
 		initialise();
 		setstart();
 		for (int i=1;i<=numberOfIterations;i++){
+			actualIteration += 1;
 			seekPotentialSponsors();
 			allocateSponsor();
 			allocateFunding();
@@ -317,6 +344,7 @@ public class World {
 			setBudgetRequirements();
 			move();
 			cleanupActivities();
+			notifyListeners();             // for the simple listener pattern. 
 		}
 		calculateStatistics();
 		setend();
@@ -333,7 +361,9 @@ public class World {
 			agency.clearSavingsDifference();
 		}
 	}
+	
 	public void write(int iteration){
+		// this routine calls the generic writer and asks it to write data to wherever the implementation puts the data.
 		if (writer != null){
 			if (iteration == 1) // only prepare for the first iteration
 				writer.prepare(this);
@@ -345,6 +375,17 @@ public class World {
 			}
 	} // write
 
+	public void addListener(publishProgress add){
+		listeners.add(add);
+	}
+	
+	
+	public void notifyListeners() {
+		for (publishProgress pl : listeners){
+			pl.getProgress(actualIteration + ""); //  + "/" + numberOfIterations);
+		}
+	}
+	
 	public void move(){
 		moveCloserToSponsor(LAgencies, LSponsors, moveRate);
 	} // move
@@ -492,14 +533,20 @@ public class World {
 		Statistics statistics = new Statistics();
 		statistics.setData(statisticList);
 		statistics.calculate();
-		log(1,1,"mean :" + statistics.getMean());
-		log(1,1,"lcv :" + statistics.getLcv());
-		log(1,1,"Skew :" + statistics.getSkewness());
-		log(1,1,"Kurtosis :" + statistics.getKurtosis());
-		log(1,1,"Lmean :" + statistics.getLMean());
-		log(1,1,"lLcv :" + statistics.getLLcv());
-		log(1,1,"LSkew :" + statistics.getLSkewness());
-		log(1,1,"LKurtosis :" + statistics.getLKurtosis());
+		mean 		= statistics.getMean();
+		lcv			= statistics.getLcv();
+		skewness	= statistics.getSkewness();
+		kurtosis	= statistics.getKurtosis();
+		L_lcv		= statistics.getLLcv();
+		L_skewness	= statistics.getLSkewness();
+		L_kurtosis	= statistics.getLKurtosis();
+		log(1,1,"mean :" + mean);
+		log(1,1,"lcv :" + lcv);
+		log(1,1,"Skew :" + skewness);
+		log(1,1,"Kurtosis :" + kurtosis);
+		log(1,1,"lLcv :" + L_lcv);
+		log(1,1,"LSkew :" + L_skewness);
+		log(1,1,"LKurtosis :" + L_kurtosis);
 		
 	}
 	
@@ -601,7 +648,7 @@ public class World {
 					}
 				}
 			}
-			for(int i=0; i< size;i++){ // then pay them the calculated money, and pay the rest their budget
+			for(int i=0; i< size;i++){ // then pay the cut agencies the calculated money, and pay the rest their budget
 				agency = sponsor.getAgencies().get(i);
 				if (!agency.getCutDown()){
 					payoff += agency.getBudget();
@@ -624,7 +671,7 @@ public class World {
 			totalAmount = sponsor.getMoney();
 			totalAgencyNeed = getTotalAgencyNeed(sponsor);
 
-			if (totalAgencyNeed == 0){  // no reason to divide by 0, if there is no moneyneed
+			if (totalAgencyNeed == 0){  // no reason to divide by 0, if there is no money need. Just a fail safe, as this routine is not supposed to be invoked if there is no agencyNeed
 				percentageOfPayout = 0;
 				return percentageOfPayout;
 			}
@@ -646,28 +693,7 @@ public class World {
 		return totalAgencyNeed;
 	} // getTotalAgencyNeed
 
-	private static class Settings{
-		private String connectionUrl = "jdbc:mysql://localhost:3306/sponsors_agencies"  + "?useSSL=false";
-		private String saveLocation = "E:\\Data\\";
-		private String dbConnector = "com.mysql.jdbc.Driver";
-		private String user = "root";
-		private String pw   = "1064"; //"?Hard2type!";
-	} // class Settings
-
-	/*
-	 * Small getters to retrieve some world specific settings, embedded in the private class: Settings. 
-	 */
-	public String getConnectionUrl(){return settings.connectionUrl;	}
-	public String getPath(){return settings.saveLocation;};
-	public String getdbConnector(){return settings.dbConnector;}
-	public String getuser(){return settings.user;}
-	public String getpw(){return settings.pw;} 
-	/* obviously no-one leaves a password hardcoded in the source. 
-	 * Specify password in encrypted config file and read encrypted password into char array (as opposed to the current String)
-	 * So basically read all config settings into user interface (assuming the data has been stored in a file. (and pw in a segregated encrypted file!) 
-	 * (maybe use JPasswordField or PasswordField depending on whether JavaFX is chosen)  
-	 *  Initialise the Setting class with all available config, including pw in char-array instead of current String.
-	 */
+	
 
 
 } // Class World

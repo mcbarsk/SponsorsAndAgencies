@@ -1,4 +1,4 @@
-package dk.ms.writer;
+package dk.ms.SponsorsAndAgenciesModel.Writer;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -7,9 +7,9 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
-import dk.ms.SponsorsAndAgencies.Agency;
-import dk.ms.SponsorsAndAgencies.Sponsor;
-import dk.ms.SponsorsAndAgencies.World;
+import dk.ms.SponsorsAndAgenciesControl.Agency;
+import dk.ms.SponsorsAndAgenciesControl.Sponsor;
+import dk.ms.SponsorsAndAgenciesControl.World;
 import dk.ms.Statistics.Statistics;
 
 /**
@@ -82,11 +82,11 @@ public class WriterSQL extends SponsorsAndAgenciesWriter{
 	private void connect(World world){
 		try {
 			if (conn ==null || conn.isClosed()){
-				ConnURL = world.getConnectionUrl();
+				ConnURL = world.getSettings().getConnectionUrl();
 
-				Class.forName(world.getdbConnector()).newInstance();
-				String connectionUser = world.getuser();
-				String connectionPassword = world.getpw(); 
+				Class.forName(world.getSettings().getdbConnector()).newInstance();
+				String connectionUser = world.getSettings().getuser();
+				String connectionPassword = world.getSettings().getpw(); 
 				conn = DriverManager.getConnection(ConnURL, connectionUser, connectionPassword);
 				conn.setAutoCommit(false);
 			}
