@@ -168,7 +168,7 @@ public class World {
 		//setstart();
 		// Create Sponsors
 		for (int i = 0; i<initialNumberOfSponsors;i++ ){
-			LSponsors.add(new Sponsor(sponsorUtilities, worldID, creationDate,i,worldSize[0],worldSize[1],sponsorMoney,sponsorSigmaFactor));
+			LSponsors.add(new Sponsor(sponsorUtilities, worldID, creationDate,i,worldSize[0],worldSize[1],sponsorMoney,sponsorMoney/sponsorSigmaFactor));
 		} // 
 		// Create Agencies. Either the initial number is set, or the system calculates the number of agencies.
 		if (initialNumberOfAgencies > 0){
@@ -249,6 +249,7 @@ public class World {
 	} // allocateSponsor
 
 	public void allocateFunding(){ // Step 4
+		// TODO Consider over allocation
 		resetCutDown();                           // initialises the agencies. 
 		for (int i=0; i < LSponsors.size();i++){
 			Sponsor sponsor = LSponsors.get(i);
@@ -399,6 +400,7 @@ public class World {
 		int returnValue = -1;
 		double minDistance = 99999;
 		int size = agency.getPossibleSponsors().size();
+		// TODO loyalty
 		for (int i=0; i<size;i++){
 			Sponsor sponsor = agency.getPossibleSponsors().get(i);
 			double distance = distance(sponsor, agency);
@@ -621,7 +623,7 @@ public class World {
 		} // payoutPercentageRate
 
 		private static void payoutBasedOnRisk(Sponsor sponsor){
-			// finds a set of agencies, which will be cut percentagewise. This is done by initially finding the candidates 
+			// finds a set of agencies, which will be cut percentage wise. This is done by initially finding the candidates 
 			// at baserisk > random()
 			// Afterwards all are investigated based upon baserisk compared against random
 			// for all the cutdown agencies, the payout will be: 

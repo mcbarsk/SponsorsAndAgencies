@@ -51,8 +51,8 @@ public class TestMain {
 			//	System.out.println("Kurtosis: " + (stat.getKurtosis() +3) + "\tSkewness: " + stat.getSkewness() + "\t\tdev:" + stat.getStandardDeviation());
 			//	System.out.println("mean: descriptive" + (stat.getMean()) + "\tMoment: " + firstmoment.getResult() + "\tsecond: " + ((FirstMoment)secondmoment).getResult());
 				
-				System.out.println(rpad(statistics.getLMean(),23) + rpad(statistics.getLMean(),23) +  rpad(statistics.getLLcv(),23) + rpad(statistics.getLcv(),23) + 
-						           rpad(statistics.getLSkewness(),23) + rpad(statistics.getSkewness(),23) + rpad(statistics.getLKurtosis(),23) + rpad(statistics.getKurtosis(),23) );
+			//	System.out.println(rpad(statistics.getLMean(),23) + rpad(statistics.getLMean(),23) +  rpad(statistics.getLLcv(),23) + rpad(statistics.getLcv(),23) + 
+			//			           rpad(statistics.getLSkewness(),23) + rpad(statistics.getSkewness(),23) + rpad(statistics.getLKurtosis(),23) + rpad(statistics.getKurtosis(),23) );
 				
 			}
 		}

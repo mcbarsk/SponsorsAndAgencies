@@ -555,7 +555,7 @@ public class WorldGUIMain {
 			// textArea.append("finito");
 			// System.out.println("finito???");
 			btnRunSimulation.setEnabled(true);
-			textArea.append("ID:" + world.getWorldID() + "Created:" + world.getCreationDate() + "\n");
+			textArea.append("ID:" + world.getWorldID() + "|Created:" + world.getCreationDate() + "\n");
 			textArea.append("Mean:" + "\t" + world.getMean() + "\n");
 			textArea.append("lcv" + "\t" + world.getLcv() + "\n");
 			textArea.append("skewness" + "\t" + world.getSkewness() + "\n");
@@ -563,6 +563,8 @@ public class WorldGUIMain {
 			textArea.append("L_lcv" + "\t" + world.getL_lcv() + "\n");
 			textArea.append("L_skewness" + "\t" + world.getL_skewness() + "\n");
 			textArea.append("L_kurtosis" + "\t" + world.getL_kurtosis() + "\n");
+			
+			readWorldIDs();
 
 		} // done
 		World world;

@@ -74,6 +74,8 @@ public class Agency implements Cloneable{
 	public void setSavings(final double savings) {
 		savingsdifference = -1 * ((this.savings - savings) / this.savings) * 100; // sets the percentage difference related to payout
 		// the minus one is in order to have a positive increase if new savings > old savings.
+		if (savingsdifference < -100)
+			savingsdifference = -100;
 		this.savings = savings;
 	}
 
