@@ -19,6 +19,7 @@ public class Agency implements Cloneable{
 	private boolean		cutDown = true;
 	private double		savingsdifference = 0;
 	private double		budgetIncrease = 1; // factor for budget increase per iteration
+	private int 		loyalty = 0; // amount of times the same sponsor has been allocated.
 
 	public Agency(Utilities util, String worldID, Timestamp creationDate, int name, int width, int height, 
 				  double mu, double sigma, double eyesight, double moneyReserveFactor,
@@ -62,6 +63,7 @@ public class Agency implements Cloneable{
 	public Timestamp getCreationDate(){return creationDate;}
 	public boolean getBroke()		{return savings <= 0;}
 	public double getSavingsdiff()	{return savingsdifference;}
+	public int getLoyalty()			{return loyalty;}
 
 	public final void addSponsor(Sponsor sponsor){
 		possibleSponsors.add(sponsor);
@@ -112,7 +114,13 @@ public class Agency implements Cloneable{
 			
 
 	public void setSponsor(Sponsor sponsor){
+		if(sponsor.equals(chosenSponsor)){
+			loyalty += loyalty;
+		}
+		else{
 		this.chosenSponsor = sponsor;
+		loyalty = 1;
+		}
 	}
 
 	public double[] getPosition(){return position;}

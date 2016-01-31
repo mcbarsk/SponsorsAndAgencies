@@ -487,6 +487,7 @@ public class WorldGUIMain {
 		int initialNumberOfAgencies 	= 100;
 		// CutDownModel cm 				= CutDownModel.SAME_PERCENTAGE_RATE;
 		CutDownModel cm 				= CutDownModel.PROBABILITY_CALCULATION;
+		AllocationMethod am				= AllocationMethod.CLOSEST_DISTANCE;
 		int[] ws 						= {5,5};
 		double sponsorSigmaFactor 		= 8; 
 		double sponsorMoney 			= 50;
@@ -530,10 +531,11 @@ public class WorldGUIMain {
 			agencySigmaFactor 			= Double.parseDouble(Inp_agencySigma.getText());
 			agencyRequirementNeed		= Double.parseDouble(Inp_requirementNeed.getText());
 			sightOfAgency 				= Double.parseDouble(Inp_eyesight.getText());
-			boolean pickRandomSponsor 		= false;
+			boolean pickRandomSponsor 	= false;
 			moveRate					= Double.parseDouble(Inp_moveRate.getText());
 			budgetIncrease				= Double.parseDouble(Inp_budgetIncrease.getText());
 			baseRisk					= Double.parseDouble(Inp_baseRisk.getText());
+			//TODO add allocation method am							= 
 
 
 			listen = new What();
@@ -572,7 +574,7 @@ public class WorldGUIMain {
 			world = new World(numberOfIterations, initialNumberOfSponsors,initialNumberOfAgencies, 
 					cm, ws,sponsorSigmaFactor, sponsorMoney, agencyMoney,agencyMoneyReserveFactor,
 					agencySigmaFactor,agencyRequirementNeed,
-					agencyRequirementSigma,sightOfAgency, pickRandomSponsor, writeMethod, moveRate,
+					agencyRequirementSigma,sightOfAgency, pickRandomSponsor, writeMethod, am,moveRate,
 					budgetIncrease,baseRisk,settings);
 			world.addListener(listen);
 			world.orchestrateWorld();

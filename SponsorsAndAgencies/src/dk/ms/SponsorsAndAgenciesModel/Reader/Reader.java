@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import dk.ms.SponsorsAndAgenciesControl.Settings;
 import dk.ms.SponsorsAndAgenciesControl.World;
 import dk.ms.SponsorsAndAgenciesControl.WriteMethod;
+import dk.ms.SponsorsAndAgenciesControl.AllocationMethod;
 import dk.ms.SponsorsAndAgenciesControl.CutDownModel;
 
 public class Reader {
@@ -25,6 +26,7 @@ public class Reader {
 			"initialNumberOfSponsors," +
 			"initialNumberOfAgencies,"+
 			"cutDownModel," +
+			"allocationMethod," + 
 			"worldSize," +
 			"sponsorSigmaFactor," +
 			"sponsorMoney," +
@@ -107,7 +109,8 @@ public class Reader {
 					wsi[0] = Integer.parseInt(wsS[0]);
 					wsi[1] = Integer.parseInt(wsS[1]);
 					boolean random = (rs.getInt("pickRandomSponsor") == 1 ? true :false);
-					CutDownModel cm = CutDownModel.convert(rs.getString("cutDownModel"));
+					CutDownModel 		cm = CutDownModel.convert(rs.getString("cutDownModel"));
+					AllocationMethod 	am = AllocationMethod.convert(rs.getString("allocationMethod"));
 					world = new World(rs.getInt("numberofiterations"),
 							rs.getInt("initialNumberOfSponsors"),
 							rs.getInt("initialNumberOfAgencies"),
@@ -124,6 +127,7 @@ public class Reader {
 							rs.getDouble("sightOfAgency"),
 							random,
 							WriteMethod.NONE,
+							am,
 							rs.getDouble("moveRate"),
 							1.02,
 							rs.getDouble("baseRisk"),
