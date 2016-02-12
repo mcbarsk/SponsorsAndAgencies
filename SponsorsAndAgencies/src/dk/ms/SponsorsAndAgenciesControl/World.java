@@ -514,6 +514,7 @@ public class World {
 			case LOWEST_PREVIOUS_CUT : 
 				break;
 			case LOYALTY_PROBABILITY : 
+				foundSponsor = loyaltySponsor(agency);
 				break;
 			case RANDOM_SPONSOR :
 				foundSponsor = randomSponsor(agency);
@@ -522,6 +523,38 @@ public class World {
 			return foundSponsor;
 		} // allocateAgencies
 
+		private static Sponsor loyaltySponsor(Agency agency){
+			// this routine calculates a simple weighted random based upon loyalty. 
+			// it sets up an array where it percentagewise per sponsor adds to a double until the value 1 is reached. 
+			// loyalty is part of this so if the agency has had the same sponsor for three rounds and there are 4 potential sponsors, the array would be set up like this:
+			// [0] = 0..3/6  ----> 6 = number of sponsors + loyalty count - 1
+			// [1] = 3/6..4/6
+			// [2] = 4/6..5/6
+			// [3] = 5/6..6/6
+			// this means if a sponsor has been allocated for several rounds, the probability for choosing this sponsor again is increased. (in this example the chance is 50%)
+			int size = agency.getPossibleSponsors().size();
+			double[] probabilityArray = new double[size];
+			int denominator = size + agency.getLoyalty() - 1; // the agency has been allocated for - maybe - several rounds
+			double tmpResult = 0;
+			double random = Math.random();
+			int resultIndex = 0;
+			boolean found = false;
+			for (int i = 0; i < size ; i++) { // the array is set up
+				if (agency.getSponsor() != null && agency.getSponsor().equals(agency.getPossibleSponsors().get(i))){
+					probabilityArray[i] = tmpResult + (i * agency.getLoyalty() / denominator) ;
+				}
+				else
+					probabilityArray[i] = tmpResult + (i / denominator);
+			}
+			for (int i = 0; i < size && !found; i++) { // the array is searched for first hit, where random is less than end-value for given sponsor
+				if (random < probabilityArray[i]){
+					found = true;
+					resultIndex = i;
+				}				
+			}
+			return agency.getPossibleSponsors().get(resultIndex); // finally return the sponsor
+		} // loyaltySponsor
+		
 		private static Sponsor randomSponsor(Agency agency){
 			// picks a completely random sponsor as long as it is within eyesight.
 			Sponsor sponsor = null;
