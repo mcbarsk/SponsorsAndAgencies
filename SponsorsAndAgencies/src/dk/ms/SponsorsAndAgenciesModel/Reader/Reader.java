@@ -108,7 +108,6 @@ public class Reader {
 					int[] wsi = new int[2];
 					wsi[0] = Integer.parseInt(wsS[0]);
 					wsi[1] = Integer.parseInt(wsS[1]);
-					boolean random = (rs.getInt("pickRandomSponsor") == 1 ? true :false);
 					CutDownModel 		cm = CutDownModel.convert(rs.getString("cutDownModel"));
 					AllocationMethod 	am = AllocationMethod.convert(rs.getString("allocationMethod"));
 					world = new World(rs.getInt("numberofiterations"),
@@ -125,7 +124,6 @@ public class Reader {
 							rs.getDouble("agencyRequirementNeed"),
 							rs.getDouble("agencyRequirementSigma"),
 							rs.getDouble("sightOfAgency"),
-							random,
 							WriteMethod.NONE,
 							am,
 							rs.getDouble("moveRate"),

@@ -35,26 +35,27 @@ public class World {
 	private double				agencyRequirementNeed		= 0.92;
 	private double				agencyRequirementSigma		= 0.2;
 	private double				sightOfAgency				= 2;
-	private double 				moveRate					= 0.5;
-	private boolean				pickRandomSponsor			= false;
+	private double 				moveRate					= 0.5; // how far should the agency move.
+	private MoveMethod			moveMethod;
 	private int					numberOfIterations			= 1000;
 	private int					totalNumberOfAgencies 		= 0; // singleton to ensure new agencies get a unique number
-	private double 				budgetIncrease				= 1.02;
-	private double 				baseRisk					= 0.25;
-	private WriteMethod			writeMethod;
-	private AllocationMethod	allocationMethod;
-	private SponsorsAndAgenciesWriter	writer;	
-	private ArrayList<Double> statisticList = new ArrayList<Double>();
-	private NumberFormat		formatter = new DecimalFormat("#0.00000");
-	private Settings			settings; 
+	private double 				budgetIncrease				= 1.02; // the idea was to increase the agency budget per iteration. Whether this is necessary must be investigated.
+	private double 				baseRisk					= 0.25; // used for calculating real risk. This is used by the funding algorithm.
+	private static boolean				respectSponsorMoney;		// specifies the sponsor can't be over-allocated by more than one agency.
+	private WriteMethod			writeMethod;		// ENUM for creating the writer object.
+	private AllocationMethod	allocationMethod; // ENUM for the allocation algorithms
+	private SponsorsAndAgenciesWriter	writer;	// the writer object ensures data will be written. The actual object type defines the actions, i.e. write to DB or file.
+	private ArrayList<Double> statisticList = new ArrayList<Double>();     // this list gathers the difference in agencySavings and is used for statistics
+	private NumberFormat		formatter = new DecimalFormat("#0.00000"); // for logging purposes. Just formatting a number.
+	private Settings			settings; // pertains to the settings object, which contains data regarding pw, user, db-specific settings and file location
 	private long 				start;
 	private long				end;
 	private long 				start1; // just for logging performance
 	private long				end1;   // just for logging performance
 	private boolean 			log = false; // true if runtime output to console.	
 	private List<publishProgress> listeners = new ArrayList<publishProgress>();   // to publish iterations
-	private int 				actualIteration = -1;
-	private double 				mean;
+	private int 				actualIteration = -1; // this is incremented per iteration and reported back to the listeners
+	private double 				mean;				// these are used for the calculated statistics
 	private double 				lcv;
 	private double				skewness;
 	private double				kurtosis;
@@ -75,7 +76,6 @@ public class World {
 			double agencyRequirementNeed,
 			double agencyRequirementSigma,
 			double sightOfAgency,
-			boolean pickRandomSponsor,
 			WriteMethod writeMethod,
 			AllocationMethod allocationMethod,
 			double moveRate,
@@ -117,7 +117,6 @@ public class World {
 		this.agencyRequirementNeed		= agencyRequirementNeed;    // for setting real requirements
 		this.agencyRequirementSigma		= agencyRequirementSigma;   // for setting real requirements
 		this.sightOfAgency				= sightOfAgency;
-		this.pickRandomSponsor			= pickRandomSponsor;
 		this.moveRate					= moveRate;
 		this.writeMethod				= writeMethod;
 		this.budgetIncrease				= budgetIncrease;
@@ -156,7 +155,6 @@ public class World {
 	public double getAgencyRequirementSigma() {return agencyRequirementSigma;}
 	public double getSightOfAgency() 		{return sightOfAgency;}
 	public double getMoveRate() 			{return moveRate;}
-	public boolean isPickRandomSponsor() 	{return pickRandomSponsor;}
 	public int getNumberOfIterations() 		{return numberOfIterations;}
 	public double getBudgetIncrease() 		{return budgetIncrease;}
 	public double getBaseRisk() 			{return baseRisk;}
@@ -518,6 +516,9 @@ public class World {
 			case RANDOM_SPONSOR :
 				foundSponsor = randomSponsor(agency);
 				break;
+			case SURVIVAL_MODE :
+				foundSponsor = survivalMode(agency);
+				break;
 			}
 			return foundSponsor;
 		} // allocateAgencies
@@ -545,6 +546,18 @@ public class World {
 			else
 				return null;
 		} // closestDistance
+		
+		private static Sponsor lowestPreviousCut(Agency agency){
+			// TODO implement lowestpreviousCut
+			return null;
+		}
+		
+		private static Sponsor survivalMode(Agency agency){
+			// TODO implement survivalmode
+			return null;
+		}
+		
+		
 
 		private static int returnClosestSponsorIndex(Agency agency){ // finds the sponsor closest to the Agency
 			int returnValue = -1;
@@ -554,11 +567,21 @@ public class World {
 			for (int i=0; i<size;i++){
 				Sponsor sponsor = agency.getPossibleSponsors().get(i);
 				double distance = distance(sponsor, agency);
-				if (agency.getBudget() + calculatePayoff(sponsor, agency) < sponsor.getMoney())
+				if (respectSponsorMoney) {
+					if (agency.getBudget() + calculatePayoff(sponsor, agency) < sponsor.getMoney())
+						if (distance < minDistance){
+							minDistance = distance;
+							returnValue = i;
+						}
+				}
+				else{
 					if (distance < minDistance){
 						minDistance = distance;
 						returnValue = i;
 					}
+					
+				}
+					
 			}
 			return returnValue;
 		} // returnClosestSponsorIndex

@@ -64,7 +64,7 @@ public class TestMain {
 			world = new World(numberOfIterations, initialNumberOfSponsors,initialNumberOfAgencies, 
 					cm, ws,sponsorSigmaFactor, sponsorMoney, agencyMoney,agencyMoneyReserveFactor,
 					agencySigmaFactor,agencyRequirementNeed,
-					agencyRequirementSigma,sightOfAgency, pickRandomSponsor, writeMethod,am, moveRate,
+					agencyRequirementSigma,sightOfAgency,  writeMethod,am, moveRate,
 					budgetIncrease,baseRisk,settings);
 				listener thr ; //= new listener();
 				thr = new listener();

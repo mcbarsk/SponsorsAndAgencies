@@ -11,6 +11,7 @@ import dk.ms.SponsorsAndAgenciesControl.World;
 import dk.ms.Statistics.Statistics;
 
 public class WriterFile extends SponsorsAndAgenciesWriter{
+	// TODO write result
 	private String headerFile; // filename of header
 	private String dataFile; // filename of actual data
 	private final char DELIMITER = ';'; 
@@ -89,10 +90,11 @@ public class WriterFile extends SponsorsAndAgenciesWriter{
 	
 	@Override
 	public void writeStatistics(World world, Statistics statistics){
-		
+		// TODO implement this
 	} // writeStatistics
 	
 	private void createHeaderLine(World world){
+		// TODO implement additional fields.
 		headerLine = 
 				world.getWorldID() 					+ DELIMITER + 
 				world.getCreationDate() 			+ DELIMITER +
@@ -109,7 +111,6 @@ public class WriterFile extends SponsorsAndAgenciesWriter{
 				world.getAgencyRequirementSigma() 	+ DELIMITER +
 				world.getSightOfAgency() 			+ DELIMITER +
 				world.getMoveRate() 				+ DELIMITER +
-				(world.isPickRandomSponsor() ? "1" : "0") + DELIMITER +
 				world.getNumberOfIterations();
 	} // createHeaderLine
 

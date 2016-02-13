@@ -41,7 +41,7 @@ public class WriterSQL extends SponsorsAndAgenciesWriter{
 			"initialNumberOfAgencies,cutDownModel,worldSize,sponsorSigmaFactor,sponsorMoney,agencyMoney," +
 			"agencyMoneyReserveFactor,agencySigmaFactor,agencyRequirementNeed,agencyRequirementSigma,sightOfAgency," + 
 			"moveRate,pickRandomSponsor,numberOfIterations,baserisk)" +
-			"VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+			"VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 	private String ConnURL; 
 	private boolean sponsorWritten = false;
 	private int lastAgencyWritten = -1;
@@ -125,9 +125,8 @@ public class WriterSQL extends SponsorsAndAgenciesWriter{
 			stmt.setDouble(13, world.getAgencyRequirementSigma());
 			stmt.setDouble(14, world.getSightOfAgency());
 			stmt.setDouble(15, world.getMoveRate());
-			stmt.setInt(16, world.isPickRandomSponsor() ? 1:0);
-			stmt.setInt(17, world.getNumberOfIterations());
-			stmt.setDouble(18, world.getBaseRisk());
+			stmt.setInt(16, world.getNumberOfIterations());
+			stmt.setDouble(17, world.getBaseRisk());
 			stmt.execute();	
 			conn.commit();
 
