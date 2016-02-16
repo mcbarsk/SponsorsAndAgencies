@@ -17,9 +17,10 @@ public class Agency implements Cloneable{
 	private double 		eyesight; // How far can an agency see
 	private ArrayList<Sponsor> possibleSponsors; 
 	private boolean		cutDown = true;
-	private double		savingsdifference = 0;
+	private double		savingsdifference = 0; // difference in percentage of the savings, previous round vs this round. This is the basis for the statistics calculation.
 	private double		budgetIncrease = 1; // factor for budget increase per iteration
 	private int 		loyalty = 0; // amount of times the same sponsor has been allocated.
+	private String		status = "";
 
 	public Agency(Utilities util, String worldID, Timestamp creationDate, int name, int width, int height, 
 				  double mu, double sigma, double eyesight, double moneyReserveFactor,
@@ -64,6 +65,8 @@ public class Agency implements Cloneable{
 	public boolean getBroke()		{return savings <= 0;}
 	public double getSavingsdiff()	{return savingsdifference;}
 	public int getLoyalty()			{return loyalty;}
+	public double[] getPosition()	{return position;}
+	public String getStatus()		{return status;}
 
 	public final void addSponsor(Sponsor sponsor){
 		possibleSponsors.add(sponsor);
@@ -116,18 +119,19 @@ public class Agency implements Cloneable{
 	public void setSponsor(Sponsor sponsor){
 		if(sponsor.equals(chosenSponsor)){
 			loyalty += loyalty;
+			status = status + "same sponsor,";
 		}
 		else{
 		this.chosenSponsor = sponsor;
+		status = status + "new sponsor:" + sponsor.getName() + ",";
 		loyalty = 1;
 		}
 	}
 
-	public double[] getPosition(){return position;}
-
 	public void setPosition(double width, double height){
 		position[0] = width;
 		position[1] = height;
+		status = status + "moved,";
 	}
 
 	public void setCutDown(boolean bool){
@@ -144,6 +148,10 @@ public class Agency implements Cloneable{
 
 	public void newBudget(){
 		budget = budget * budgetIncrease;
+	}
+	
+	public void clearStatus(){
+		status = "";
 	}
 
 

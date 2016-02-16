@@ -4,7 +4,6 @@ public enum AllocationMethod {
 	RANDOM_SPONSOR, 
 	CLOSEST_DISTANCE, 
 	LOYALTY_PROBABILITY, 
-	LOWEST_PREVIOUS_CUT, 
 	SURVIVAL_MODE;
 
 	public static AllocationMethod convert (String string) {

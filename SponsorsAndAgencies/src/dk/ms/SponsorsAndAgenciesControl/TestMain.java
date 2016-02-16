@@ -31,6 +31,7 @@ public class TestMain {
 		// WriteMethod writeMethod = WriteMethod.TO_DATABASE;
 		// WriteMethod writeMethod = WriteMethod.TO_FILE;
 		AllocationMethod am = AllocationMethod.CLOSEST_DISTANCE;
+		MoveMethod mm       = MoveMethod.PERCENTAGE_OF_DISTANCE;
 				
 		 Settings settings = new Settings();
 		World world;
@@ -64,7 +65,7 @@ public class TestMain {
 			world = new World(numberOfIterations, initialNumberOfSponsors,initialNumberOfAgencies, 
 					cm, ws,sponsorSigmaFactor, sponsorMoney, agencyMoney,agencyMoneyReserveFactor,
 					agencySigmaFactor,agencyRequirementNeed,
-					agencyRequirementSigma,sightOfAgency,  writeMethod,am, moveRate,
+					agencyRequirementSigma,sightOfAgency,  writeMethod,am, moveRate, mm,
 					budgetIncrease,baseRisk,settings);
 				listener thr ; //= new listener();
 				thr = new listener();

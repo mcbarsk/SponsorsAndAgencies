@@ -38,6 +38,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import java.awt.SystemColor;
 import javax.swing.UIManager;
+import net.miginfocom.swing.MigLayout;
 
 public class WorldGUIMain {
 
@@ -60,6 +61,7 @@ public class WorldGUIMain {
 	private JProgressBar progressBar;
 	private JComboBox<CutDownModel> combo_CutdownModel;
 	private JComboBox<WriteMethod> combo_writeMethod;
+	private JComboBox<MoveMethod> combo_moveMethod;
 	private JComboBox<String> combo_WorldID;
 
 	private JButton btnRunSimulation;
@@ -100,7 +102,7 @@ public class WorldGUIMain {
 	private void initialize() {
 		settings = new Settings();
 		frame = new JFrame();
-		frame.setBounds(100, 100, 1017, 775);
+		frame.setBounds(100, 100, 1018, 787);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(new BoxLayout(frame.getContentPane(), BoxLayout.X_AXIS));
 
@@ -143,7 +145,7 @@ public class WorldGUIMain {
 				try{
 					wrk.execute();
 					btnRunSimulation.setEnabled(false);} // doInBackground();}
-			catch(Exception e ){}
+				catch(Exception e ){}
 
 
 				//progressBar.;
@@ -156,35 +158,54 @@ public class WorldGUIMain {
 		panel_4.setForeground(SystemColor.inactiveCaptionBorder);
 		panel_4.setBorder(new EtchedBorder(EtchedBorder.LOWERED, Color.CYAN, null));
 
+		JPanel panel = new JPanel();
+		panel.setAlignmentX(Component.LEFT_ALIGNMENT);
+		panel.setLayout(new BorderLayout(0, 0));
+
+		JButton btnNewButton = new JButton("Clear");
+		panel.add(btnNewButton, BorderLayout.SOUTH);
+		btnNewButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				textArea.setText(null);
+			}
+		});
+
+		JScrollPane scrollPane = new JScrollPane();
+		panel.add(scrollPane, BorderLayout.CENTER);
+
+		textArea = new JTextArea();
+		textArea.setAlignmentY(Component.TOP_ALIGNMENT);
+		scrollPane.setViewportView(textArea);
+
 		GroupLayout gl_panel_1 = new GroupLayout(panel_1);
 		gl_panel_1.setHorizontalGroup(
 			gl_panel_1.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_panel_1.createSequentialGroup()
-					.addContainerGap()
 					.addGroup(gl_panel_1.createParallelGroup(Alignment.LEADING)
 						.addGroup(gl_panel_1.createSequentialGroup()
-							.addComponent(panel_2, GroupLayout.PREFERRED_SIZE, 340, GroupLayout.PREFERRED_SIZE)
-							.addContainerGap())
+							.addGap(112)
+							.addComponent(btnRunSimulation))
 						.addGroup(gl_panel_1.createSequentialGroup()
-							.addComponent(panel_4, GroupLayout.PREFERRED_SIZE, 329, GroupLayout.PREFERRED_SIZE)
-							.addContainerGap())
+							.addContainerGap()
+							.addComponent(progressBar, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
 						.addGroup(gl_panel_1.createSequentialGroup()
-							.addComponent(lblProgress)
-							.addContainerGap(547, Short.MAX_VALUE))
+							.addContainerGap()
+							.addComponent(panel_2, GroupLayout.PREFERRED_SIZE, 367, GroupLayout.PREFERRED_SIZE))
 						.addGroup(gl_panel_1.createSequentialGroup()
-							.addComponent(lblWorldId)
-							.addPreferredGap(ComponentPlacement.UNRELATED)
-							.addComponent(combo_WorldID, GroupLayout.PREFERRED_SIZE, 328, GroupLayout.PREFERRED_SIZE)
-							.addGap(157))
+							.addContainerGap()
+							.addComponent(panel_3, GroupLayout.PREFERRED_SIZE, 285, GroupLayout.PREFERRED_SIZE))
 						.addGroup(gl_panel_1.createSequentialGroup()
-							.addComponent(panel_3, GroupLayout.PREFERRED_SIZE, 285, GroupLayout.PREFERRED_SIZE)
-							.addContainerGap(304, Short.MAX_VALUE))
-						.addGroup(gl_panel_1.createSequentialGroup()
-							.addComponent(btnRunSimulation)
-							.addContainerGap(486, Short.MAX_VALUE))
-						.addGroup(gl_panel_1.createSequentialGroup()
-							.addComponent(progressBar, GroupLayout.DEFAULT_SIZE, 439, Short.MAX_VALUE)
-							.addGap(150))))
+							.addContainerGap()
+							.addGroup(gl_panel_1.createParallelGroup(Alignment.LEADING)
+								.addComponent(panel_4, GroupLayout.PREFERRED_SIZE, 329, GroupLayout.PREFERRED_SIZE)
+								.addComponent(lblProgress)
+								.addGroup(gl_panel_1.createSequentialGroup()
+									.addComponent(lblWorldId)
+									.addPreferredGap(ComponentPlacement.UNRELATED)
+									.addComponent(combo_WorldID, GroupLayout.PREFERRED_SIZE, 328, GroupLayout.PREFERRED_SIZE)))))
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addComponent(panel, GroupLayout.DEFAULT_SIZE, 601, Short.MAX_VALUE)
+					.addContainerGap())
 		);
 		gl_panel_1.setVerticalGroup(
 			gl_panel_1.createParallelGroup(Alignment.LEADING)
@@ -193,18 +214,20 @@ public class WorldGUIMain {
 						.addComponent(lblWorldId)
 						.addComponent(combo_WorldID, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
 					.addPreferredGap(ComponentPlacement.RELATED)
-					.addComponent(panel_4, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-					.addPreferredGap(ComponentPlacement.UNRELATED)
+					.addComponent(panel_4, GroupLayout.PREFERRED_SIZE, 310, GroupLayout.PREFERRED_SIZE)
+					.addGap(18)
 					.addComponent(panel_3, GroupLayout.PREFERRED_SIZE, 62, GroupLayout.PREFERRED_SIZE)
 					.addPreferredGap(ComponentPlacement.UNRELATED)
-					.addComponent(panel_2, GroupLayout.PREFERRED_SIZE, 214, GroupLayout.PREFERRED_SIZE)
-					.addGap(48)
+					.addComponent(panel_2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+					.addGap(18)
+					.addComponent(progressBar, GroupLayout.PREFERRED_SIZE, 13, GroupLayout.PREFERRED_SIZE)
+					.addPreferredGap(ComponentPlacement.RELATED)
 					.addComponent(btnRunSimulation)
-					.addGap(46)
-					.addComponent(progressBar, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-					.addGap(442)
-					.addComponent(lblProgress)
-					.addGap(2))
+					.addGap(402)
+					.addComponent(lblProgress))
+				.addGroup(gl_panel_1.createSequentialGroup()
+					.addGap(6)
+					.addComponent(panel, GroupLayout.PREFERRED_SIZE, 724, GroupLayout.PREFERRED_SIZE))
 		);
 
 		JLabel lblIterations = new JLabel("# Iterations");
@@ -236,89 +259,89 @@ public class WorldGUIMain {
 		Inp_world_Y = new JTextField();
 		Inp_world_Y.setToolTipText("The Y-axis of the world.");
 		Inp_world_Y.setColumns(10);
-		
-				combo_CutdownModel = new JComboBox<CutDownModel>();
-				combo_CutdownModel.setBackground(new Color(250, 250, 210));
-				combo_CutdownModel.setToolTipText("Specifies the cut down model for the simulation. \r\n");
-				combo_CutdownModel.setAlignmentX(Component.LEFT_ALIGNMENT);
-				combo_CutdownModel.setAlignmentY(Component.TOP_ALIGNMENT);
-				combo_CutdownModel.setModel(new DefaultComboBoxModel<CutDownModel>(CutDownModel.values()));
-		
-				JLabel lblCutDownModel = new JLabel("Cut down");
-		
-				JLabel lblWriteMethod = new JLabel("Write method");
-		
-				combo_writeMethod = new JComboBox<WriteMethod>();
-				combo_writeMethod.setBackground(new Color(250, 250, 210));
-				combo_writeMethod.setAlignmentX(Component.LEFT_ALIGNMENT);
-				combo_writeMethod.setAlignmentY(Component.TOP_ALIGNMENT);
-				combo_writeMethod.setModel(new DefaultComboBoxModel<WriteMethod>(WriteMethod.values()));
+
+		combo_CutdownModel = new JComboBox<CutDownModel>();
+		combo_CutdownModel.setBackground(new Color(250, 250, 210));
+		combo_CutdownModel.setToolTipText("Specifies the cut down model for the simulation. \r\n");
+		combo_CutdownModel.setAlignmentX(Component.LEFT_ALIGNMENT);
+		combo_CutdownModel.setAlignmentY(Component.TOP_ALIGNMENT);
+		combo_CutdownModel.setModel(new DefaultComboBoxModel<CutDownModel>(CutDownModel.values()));
+
+		JLabel lblCutDownModel = new JLabel("Cut down");
+
+		JLabel lblWriteMethod = new JLabel("Write method");
+
+		combo_writeMethod = new JComboBox<WriteMethod>();
+		combo_writeMethod.setBackground(new Color(250, 250, 210));
+		combo_writeMethod.setAlignmentX(Component.LEFT_ALIGNMENT);
+		combo_writeMethod.setAlignmentY(Component.TOP_ALIGNMENT);
+		combo_writeMethod.setModel(new DefaultComboBoxModel<WriteMethod>(WriteMethod.values()));
 		GroupLayout gl_panel_4 = new GroupLayout(panel_4);
 		gl_panel_4.setHorizontalGroup(
-			gl_panel_4.createParallelGroup(Alignment.LEADING)
+				gl_panel_4.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_panel_4.createSequentialGroup()
-					.addContainerGap()
-					.addGroup(gl_panel_4.createParallelGroup(Alignment.LEADING)
-						.addComponent(lblIterations)
-						.addComponent(lblSponsors)
-						.addComponent(lblAgencies)
-						.addComponent(lblWorldSize)
-						.addComponent(lblCutDownModel)
-						.addComponent(lblWriteMethod))
-					.addGroup(gl_panel_4.createParallelGroup(Alignment.LEADING)
-						.addGroup(gl_panel_4.createSequentialGroup()
-							.addGap(9)
-							.addGroup(gl_panel_4.createParallelGroup(Alignment.TRAILING, false)
-								.addGroup(Alignment.LEADING, gl_panel_4.createSequentialGroup()
-									.addComponent(Inp_world_X, GroupLayout.PREFERRED_SIZE, 27, GroupLayout.PREFERRED_SIZE)
-									.addPreferredGap(ComponentPlacement.RELATED)
-									.addComponent(Inp_world_Y, GroupLayout.PREFERRED_SIZE, 26, GroupLayout.PREFERRED_SIZE))
-								.addComponent(Inp_sponsors, Alignment.LEADING, 0, 0, Short.MAX_VALUE)
-								.addComponent(Inp_iterations, Alignment.LEADING)
-								.addComponent(Inp_Agencies, Alignment.LEADING, 0, 0, Short.MAX_VALUE)))
-						.addGroup(gl_panel_4.createSequentialGroup()
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addGroup(gl_panel_4.createParallelGroup(Alignment.LEADING)
-								.addComponent(combo_CutdownModel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-								.addComponent(combo_writeMethod, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))))
-					.addGap(319))
-		);
+						.addContainerGap()
+						.addGroup(gl_panel_4.createParallelGroup(Alignment.LEADING)
+								.addComponent(lblIterations)
+								.addComponent(lblSponsors)
+								.addComponent(lblAgencies)
+								.addComponent(lblWorldSize)
+								.addComponent(lblCutDownModel)
+								.addComponent(lblWriteMethod))
+						.addGroup(gl_panel_4.createParallelGroup(Alignment.LEADING)
+								.addGroup(gl_panel_4.createSequentialGroup()
+										.addGap(9)
+										.addGroup(gl_panel_4.createParallelGroup(Alignment.TRAILING, false)
+												.addGroup(Alignment.LEADING, gl_panel_4.createSequentialGroup()
+														.addComponent(Inp_world_X, GroupLayout.PREFERRED_SIZE, 27, GroupLayout.PREFERRED_SIZE)
+														.addPreferredGap(ComponentPlacement.RELATED)
+														.addComponent(Inp_world_Y, GroupLayout.PREFERRED_SIZE, 26, GroupLayout.PREFERRED_SIZE))
+												.addComponent(Inp_sponsors, Alignment.LEADING, 0, 0, Short.MAX_VALUE)
+												.addComponent(Inp_iterations, Alignment.LEADING)
+												.addComponent(Inp_Agencies, Alignment.LEADING, 0, 0, Short.MAX_VALUE)))
+								.addGroup(gl_panel_4.createSequentialGroup()
+										.addPreferredGap(ComponentPlacement.RELATED)
+										.addGroup(gl_panel_4.createParallelGroup(Alignment.LEADING)
+												.addComponent(combo_CutdownModel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+												.addComponent(combo_writeMethod, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))))
+						.addGap(319))
+				);
 		gl_panel_4.setVerticalGroup(
-			gl_panel_4.createParallelGroup(Alignment.LEADING)
+				gl_panel_4.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_panel_4.createSequentialGroup()
-					.addContainerGap()
-					.addGroup(gl_panel_4.createParallelGroup(Alignment.BASELINE)
-						.addComponent(lblIterations)
-						.addComponent(Inp_iterations, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-					.addGroup(gl_panel_4.createParallelGroup(Alignment.LEADING)
-						.addGroup(gl_panel_4.createSequentialGroup()
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(Inp_sponsors, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-						.addGroup(gl_panel_4.createSequentialGroup()
-							.addGap(12)
-							.addComponent(lblSponsors)))
-					.addGroup(gl_panel_4.createParallelGroup(Alignment.LEADING)
-						.addGroup(gl_panel_4.createSequentialGroup()
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(Inp_Agencies, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-						.addGroup(gl_panel_4.createSequentialGroup()
-							.addGap(12)
-							.addComponent(lblAgencies)))
-					.addPreferredGap(ComponentPlacement.UNRELATED)
-					.addGroup(gl_panel_4.createParallelGroup(Alignment.BASELINE)
-						.addComponent(lblWorldSize)
-						.addComponent(Inp_world_X, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-						.addComponent(Inp_world_Y, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-					.addPreferredGap(ComponentPlacement.UNRELATED)
-					.addGroup(gl_panel_4.createParallelGroup(Alignment.BASELINE)
-						.addComponent(lblCutDownModel)
-						.addComponent(combo_CutdownModel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-					.addPreferredGap(ComponentPlacement.UNRELATED)
-					.addGroup(gl_panel_4.createParallelGroup(Alignment.BASELINE)
-						.addComponent(lblWriteMethod)
-						.addComponent(combo_writeMethod, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-					.addContainerGap(18, Short.MAX_VALUE))
-		);
+						.addContainerGap()
+						.addGroup(gl_panel_4.createParallelGroup(Alignment.BASELINE)
+								.addComponent(lblIterations)
+								.addComponent(Inp_iterations, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+						.addGroup(gl_panel_4.createParallelGroup(Alignment.LEADING)
+								.addGroup(gl_panel_4.createSequentialGroup()
+										.addPreferredGap(ComponentPlacement.RELATED)
+										.addComponent(Inp_sponsors, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+								.addGroup(gl_panel_4.createSequentialGroup()
+										.addGap(12)
+										.addComponent(lblSponsors)))
+						.addGroup(gl_panel_4.createParallelGroup(Alignment.LEADING)
+								.addGroup(gl_panel_4.createSequentialGroup()
+										.addPreferredGap(ComponentPlacement.RELATED)
+										.addComponent(Inp_Agencies, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+								.addGroup(gl_panel_4.createSequentialGroup()
+										.addGap(12)
+										.addComponent(lblAgencies)))
+						.addPreferredGap(ComponentPlacement.UNRELATED)
+						.addGroup(gl_panel_4.createParallelGroup(Alignment.BASELINE)
+								.addComponent(lblWorldSize)
+								.addComponent(Inp_world_X, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+								.addComponent(Inp_world_Y, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+						.addPreferredGap(ComponentPlacement.UNRELATED)
+						.addGroup(gl_panel_4.createParallelGroup(Alignment.BASELINE)
+								.addComponent(lblCutDownModel)
+								.addComponent(combo_CutdownModel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+						.addPreferredGap(ComponentPlacement.UNRELATED)
+						.addGroup(gl_panel_4.createParallelGroup(Alignment.BASELINE)
+								.addComponent(lblWriteMethod)
+								.addComponent(combo_writeMethod, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+						.addContainerGap(18, Short.MAX_VALUE))
+				);
 		panel_4.setLayout(gl_panel_4);
 
 		JLabel lblSponsorMoney = new JLabel("Sponsor money");
@@ -358,171 +381,133 @@ public class WorldGUIMain {
 						.addContainerGap(31, Short.MAX_VALUE))
 				);
 		panel_3.setLayout(gl_panel_3);
+		panel_2.setLayout(new MigLayout("", "[59px][59px][59px][59px][59px][59px]", "[16px][16px][16px][16px][16px][16px]"));
 
 		JLabel lblAgencyMoney = new JLabel("Agency money");
+		lblAgencyMoney.setAlignmentY(Component.TOP_ALIGNMENT);
+		panel_2.add(lblAgencyMoney, "cell 0 0,alignx left,growy");
 
 		Inp_agencyMoney = new JTextField();
 		Inp_agencyMoney.setToolTipText("The MU value for agency money.");
 		Inp_agencyMoney.setColumns(10);
+		panel_2.add(Inp_agencyMoney, "cell 1 0,grow");
+
+		JLabel label = new JLabel("");
+		panel_2.add(label, "cell 2 0,grow");
+
+		JLabel lblEyesight = new JLabel("Eyesight");
+		panel_2.add(lblEyesight, "cell 3 0,alignx left,growy");
+
+		Inp_eyesight = new JTextField();
+		Inp_eyesight.setColumns(10);
+		panel_2.add(Inp_eyesight, "cell 4 0,grow");
+
+		JLabel label_1 = new JLabel("");
+		panel_2.add(label_1, "cell 5 0,grow");
 
 		JLabel lblSigma_1 = new JLabel("Sigma");
+		panel_2.add(lblSigma_1, "cell 0 1,alignx left,growy");
 
 		Inp_agencySigma = new JTextField();
 		Inp_agencySigma.setToolTipText("The Sigma value for agency money.");
 		Inp_agencySigma.setColumns(10);
+		panel_2.add(Inp_agencySigma, "cell 1 1,grow");
+
+		JLabel label_2 = new JLabel("");
+		panel_2.add(label_2, "cell 2 1,grow");
+
+		JLabel lblBudgetIncrease = new JLabel("Budget increase");
+		panel_2.add(lblBudgetIncrease, "cell 3 1,alignx left,growy");
+
+		Inp_budgetIncrease = new JTextField();
+		Inp_budgetIncrease.setColumns(10);
+		panel_2.add(Inp_budgetIncrease, "cell 4 1,aligny bottom");
+
+		JLabel label_3 = new JLabel("");
+		panel_2.add(label_3, "flowy,cell 5 1,grow");
 
 		JLabel lblReserve = new JLabel("Reserve factor");
+		panel_2.add(lblReserve, "cell 0 2,alignx left,growy");
 
 		Inp_reserveFactor = new JTextField();
 		Inp_reserveFactor.setToolTipText("<html><p width=\\\"500\\\">The reserve factor, which calculates the agency's initial saving. <BR\\> For instance if the factor is 5, the agency savings would be 5 * agency budget.</p></html>");
 		Inp_reserveFactor.setColumns(10);
+		panel_2.add(Inp_reserveFactor, "cell 1 2");
+
+		JLabel label_4 = new JLabel("");
+		panel_2.add(label_4, "flowy,cell 2 2,grow");
+
+		JLabel label_5 = new JLabel("");
+		panel_2.add(label_5, "flowy,cell 3 2,grow");
+
+		JLabel label_6 = new JLabel("");
+		panel_2.add(label_6, "flowy,cell 4 2,grow");
+
+		JLabel label_7 = new JLabel("");
+		panel_2.add(label_7, "cell 5 2,grow");
+
+		JLabel lblBaseRisk = new JLabel("Base risk");
+		panel_2.add(lblBaseRisk, "cell 0 3,grow");
+
+		Inp_baseRisk = new JTextField();
+		Inp_baseRisk.setColumns(10);
+		panel_2.add(Inp_baseRisk, "cell 1 3,grow");
+
+		JLabel label_8 = new JLabel("");
+		panel_2.add(label_8, "cell 2 3,grow");
+
+		combo_moveMethod = new JComboBox<MoveMethod>();
+		combo_moveMethod.setModel(new DefaultComboBoxModel<MoveMethod>(MoveMethod.values()));
+		panel_2.add(combo_moveMethod, "cell 3 3,growx");
+		
+
+		JLabel label_9 = new JLabel("");
+		panel_2.add(label_9, "cell 4 3,grow");
+
+		JLabel label_10 = new JLabel("");
+		panel_2.add(label_10, "cell 5 3,grow");
 
 		JLabel lblRequirementNeed = new JLabel("Requirement");
+		panel_2.add(lblRequirementNeed, "cell 0 4,alignx left,growy");
+
+		JLabel lblReqyuirementSigma = new JLabel("Need");
+		panel_2.add(lblReqyuirementSigma, "cell 1 4,grow");
 
 		Inp_requirementNeed = new JTextField();
 		Inp_requirementNeed.setToolTipText("The MU value for the agency's real requirement.");
 		Inp_requirementNeed.setColumns(10);
+		panel_2.add(Inp_requirementNeed, "cell 2 4,grow");
 
-		JLabel lblReqyuirementSigma = new JLabel("Need");
+		JLabel lblNewLabel = new JLabel("Sigma");
+		panel_2.add(lblNewLabel, "cell 3 4,grow");
+
+		JLabel label_11 = new JLabel("");
+		panel_2.add(label_11, "flowy,cell 4 4,grow");
+
+		JLabel label_12 = new JLabel("");
+		panel_2.add(label_12, "flowy,cell 5 4,grow");
+
+		JLabel label_13 = new JLabel("");
+		panel_2.add(label_13, "cell 2 5,grow");
+
+		JLabel label_14 = new JLabel("");
+		panel_2.add(label_14, "flowy,cell 3 5,grow");
+
+		JLabel label_15 = new JLabel("");
+		panel_2.add(label_15, "cell 4 5,grow");
 
 		Inp_requirementSigma = new JTextField();
 		Inp_requirementSigma.setToolTipText("The Sigma value for the agency's real requirement.");
 		Inp_requirementSigma.setColumns(10);
-
-		JLabel lblEyesight = new JLabel("Eyesight");
-
-		Inp_eyesight = new JTextField();
-		Inp_eyesight.setColumns(10);
+		panel_2.add(Inp_requirementSigma, "cell 4 4,grow");
 
 		JLabel lblMoverate = new JLabel("Moverate");
+		panel_2.add(lblMoverate, "cell 3 2,alignx left,growy");
 
 		Inp_moveRate = new JTextField();
 		Inp_moveRate.setColumns(10);
-
-		JLabel lblNewLabel = new JLabel("Sigma");
-
-		JLabel lblBudgetIncrease = new JLabel("Budget increase");
-
-		Inp_budgetIncrease = new JTextField();
-		Inp_budgetIncrease.setColumns(10);
-
-		JLabel lblBaseRisk = new JLabel("Base risk");
-
-		Inp_baseRisk = new JTextField();
-		Inp_baseRisk.setColumns(10);
-		GroupLayout gl_panel_2 = new GroupLayout(panel_2);
-		gl_panel_2.setHorizontalGroup(
-			gl_panel_2.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_panel_2.createSequentialGroup()
-					.addContainerGap()
-					.addGroup(gl_panel_2.createParallelGroup(Alignment.LEADING)
-						.addGroup(gl_panel_2.createSequentialGroup()
-							.addGroup(gl_panel_2.createParallelGroup(Alignment.LEADING, false)
-								.addGroup(gl_panel_2.createSequentialGroup()
-									.addComponent(lblBudgetIncrease)
-									.addGap(12)
-									.addComponent(Inp_budgetIncrease, 0, 0, Short.MAX_VALUE))
-								.addGroup(gl_panel_2.createSequentialGroup()
-									.addComponent(lblRequirementNeed)
-									.addPreferredGap(ComponentPlacement.UNRELATED)
-									.addComponent(lblReqyuirementSigma)
-									.addPreferredGap(ComponentPlacement.RELATED)
-									.addComponent(Inp_requirementNeed, GroupLayout.PREFERRED_SIZE, 44, GroupLayout.PREFERRED_SIZE)))
-							.addPreferredGap(ComponentPlacement.UNRELATED)
-							.addComponent(lblNewLabel))
-						.addGroup(gl_panel_2.createSequentialGroup()
-							.addGroup(gl_panel_2.createParallelGroup(Alignment.LEADING)
-								.addGroup(gl_panel_2.createParallelGroup(Alignment.TRAILING)
-									.addComponent(lblSigma_1)
-									.addComponent(lblAgencyMoney))
-								.addComponent(lblReserve))
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addGroup(gl_panel_2.createParallelGroup(Alignment.LEADING)
-								.addComponent(Inp_agencyMoney, GroupLayout.PREFERRED_SIZE, 62, GroupLayout.PREFERRED_SIZE)
-								.addGroup(gl_panel_2.createParallelGroup(Alignment.TRAILING, false)
-									.addComponent(Inp_reserveFactor, Alignment.LEADING, 0, 0, Short.MAX_VALUE)
-									.addComponent(Inp_agencySigma, Alignment.LEADING, GroupLayout.PREFERRED_SIZE, 39, GroupLayout.PREFERRED_SIZE)))
-							.addGroup(gl_panel_2.createParallelGroup(Alignment.LEADING)
-								.addGroup(gl_panel_2.createSequentialGroup()
-									.addPreferredGap(ComponentPlacement.UNRELATED)
-									.addGroup(gl_panel_2.createParallelGroup(Alignment.LEADING)
-										.addComponent(lblEyesight)
-										.addComponent(lblMoverate)))
-								.addGroup(gl_panel_2.createSequentialGroup()
-									.addGap(12)
-									.addComponent(lblBaseRisk)))))
-					.addPreferredGap(ComponentPlacement.UNRELATED)
-					.addGroup(gl_panel_2.createParallelGroup(Alignment.LEADING)
-						.addComponent(Inp_requirementSigma, GroupLayout.PREFERRED_SIZE, 40, GroupLayout.PREFERRED_SIZE)
-						.addComponent(Inp_baseRisk, 0, 0, Short.MAX_VALUE)
-						.addComponent(Inp_moveRate, 0, 0, Short.MAX_VALUE)
-						.addComponent(Inp_eyesight, GroupLayout.DEFAULT_SIZE, 56, Short.MAX_VALUE))
-					.addContainerGap(45, Short.MAX_VALUE))
-		);
-		gl_panel_2.setVerticalGroup(
-			gl_panel_2.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_panel_2.createSequentialGroup()
-					.addContainerGap()
-					.addGroup(gl_panel_2.createParallelGroup(Alignment.BASELINE)
-						.addComponent(lblAgencyMoney)
-						.addComponent(Inp_agencyMoney, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-						.addComponent(lblEyesight)
-						.addComponent(Inp_eyesight, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-					.addPreferredGap(ComponentPlacement.UNRELATED)
-					.addGroup(gl_panel_2.createParallelGroup(Alignment.BASELINE)
-						.addComponent(lblSigma_1)
-						.addComponent(Inp_agencySigma, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-						.addComponent(lblMoverate)
-						.addComponent(Inp_moveRate, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-					.addGroup(gl_panel_2.createParallelGroup(Alignment.LEADING)
-						.addGroup(gl_panel_2.createSequentialGroup()
-							.addPreferredGap(ComponentPlacement.UNRELATED)
-							.addGroup(gl_panel_2.createParallelGroup(Alignment.BASELINE)
-								.addComponent(Inp_reserveFactor, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-								.addComponent(Inp_baseRisk, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
-						.addGroup(gl_panel_2.createSequentialGroup()
-							.addGap(18)
-							.addComponent(lblReserve))
-						.addGroup(gl_panel_2.createSequentialGroup()
-							.addGap(18)
-							.addComponent(lblBaseRisk)))
-					.addGap(21)
-					.addGroup(gl_panel_2.createParallelGroup(Alignment.BASELINE)
-						.addComponent(lblRequirementNeed)
-						.addComponent(lblReqyuirementSigma)
-						.addComponent(Inp_requirementNeed, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-						.addComponent(lblNewLabel)
-						.addComponent(Inp_requirementSigma, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-					.addGroup(gl_panel_2.createParallelGroup(Alignment.LEADING)
-						.addGroup(gl_panel_2.createSequentialGroup()
-							.addPreferredGap(ComponentPlacement.UNRELATED)
-							.addComponent(Inp_budgetIncrease, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-						.addGroup(gl_panel_2.createSequentialGroup()
-							.addGap(18)
-							.addComponent(lblBudgetIncrease)))
-					.addContainerGap(7, Short.MAX_VALUE))
-		);
-		panel_2.setLayout(gl_panel_2);
+		panel_2.add(Inp_moveRate, "cell 4 2,grow");
 		panel_1.setLayout(gl_panel_1);
-
-		JPanel panel = new JPanel();
-		panel.setAlignmentX(Component.LEFT_ALIGNMENT);
-		frame.getContentPane().add(panel);
-		panel.setLayout(new BorderLayout(0, 0));
-
-		JButton btnNewButton = new JButton("Clear");
-		panel.add(btnNewButton, BorderLayout.SOUTH);
-		btnNewButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				textArea.setText(null);
-			}
-		});
-
-		JScrollPane scrollPane = new JScrollPane();
-		panel.add(scrollPane, BorderLayout.CENTER);
-
-		textArea = new JTextArea();
-		scrollPane.setViewportView(textArea);
 
 		JMenuBar menuBar = new JMenuBar();
 		frame.setJMenuBar(menuBar);
@@ -555,6 +540,7 @@ public class WorldGUIMain {
 		double sightOfAgency 			= 3;
 		boolean pickRandomSponsor 		= false;
 		double moveRate					= 0.5;
+		MoveMethod moveMethod;
 		double budgetIncrease			= 1.02;
 		double baseRisk					= 0.25;
 		int stat = 0;
@@ -587,8 +573,8 @@ public class WorldGUIMain {
 			agencySigmaFactor 			= Double.parseDouble(Inp_agencySigma.getText());
 			agencyRequirementNeed		= Double.parseDouble(Inp_requirementNeed.getText());
 			sightOfAgency 				= Double.parseDouble(Inp_eyesight.getText());
-			boolean pickRandomSponsor 	= false;
 			moveRate					= Double.parseDouble(Inp_moveRate.getText());
+			moveMethod					= (MoveMethod)combo_moveMethod.getSelectedItem();
 			budgetIncrease				= Double.parseDouble(Inp_budgetIncrease.getText());
 			baseRisk					= Double.parseDouble(Inp_baseRisk.getText());
 			//TODO add allocation method am							= 
@@ -607,15 +593,16 @@ public class WorldGUIMain {
 			// If all items were important, it would be necessary to iterate over all items in the list named chunks. <-- the design decisions 
 			String i = chunks.get(chunks.size()-1);
 			progressBar.setValue(Integer.parseInt(i)); 	// note a progressbar is not a good idea if the simulation is allowed to invoke more than one simulation at a time. (This could become a future topic, if 
-														// the need for several iterations arise. In that case, disable progressbar for an iterative run and report the single results in the done() operation instead,
-														// for instance by spitting out results in the textArea.
+			// the need for several iterations arise. In that case, disable progressbar for an iterative run and report the single results in the done() operation instead,
+			// for instance by spitting out results in the textArea.
 		} // process
 		@Override 
 		protected void done(){
 			// this is the final operation invoked, when the threaded execution completes. This is normally where all the results are gathered and exposed for the user.
 			// for future enhancements, this could very well be the place to output some more thorough statistics regarding a given simulation. (how many agencies were created, how many were cut in average per iteration etc. etc.)
 			btnRunSimulation.setEnabled(true);
-			textArea.append("ID:" + world.getWorldID() + "|Created:" + world.getCreationDate() + "\n");
+			textArea.append("ID:      " + world.getWorldID() + "\n");
+			textArea.append("Created: " + world.getCreationDate() + "\n");
 			textArea.append("Mean:" + "\t" + world.getMean() + "\n");
 			textArea.append("lcv" + "\t" + world.getLcv() + "\n");
 			textArea.append("skewness" + "\t" + world.getSkewness() + "\n");
@@ -623,6 +610,7 @@ public class WorldGUIMain {
 			textArea.append("L_lcv" + "\t" + world.getL_lcv() + "\n");
 			textArea.append("L_skewness" + "\t" + world.getL_skewness() + "\n");
 			textArea.append("L_kurtosis" + "\t" + world.getL_kurtosis() + "\n");
+			textArea.append("-------------------------------\n");
 
 			readWorldIDs();
 
@@ -632,7 +620,7 @@ public class WorldGUIMain {
 			world = new World(numberOfIterations, initialNumberOfSponsors,initialNumberOfAgencies, 
 					cm, ws,sponsorSigmaFactor, sponsorMoney, agencyMoney,agencyMoneyReserveFactor,
 					agencySigmaFactor,agencyRequirementNeed,
-					agencyRequirementSigma,sightOfAgency, writeMethod, am,moveRate,
+					agencyRequirementSigma,sightOfAgency, writeMethod, am,moveRate,moveMethod,
 					budgetIncrease,baseRisk,settings);
 			world.addListener(listen);
 			world.orchestrateWorld();

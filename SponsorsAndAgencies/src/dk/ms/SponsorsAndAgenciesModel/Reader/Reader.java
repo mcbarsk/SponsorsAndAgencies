@@ -12,6 +12,7 @@ import dk.ms.SponsorsAndAgenciesControl.World;
 import dk.ms.SponsorsAndAgenciesControl.WriteMethod;
 import dk.ms.SponsorsAndAgenciesControl.AllocationMethod;
 import dk.ms.SponsorsAndAgenciesControl.CutDownModel;
+import dk.ms.SponsorsAndAgenciesControl.MoveMethod;
 
 public class Reader {
 	private Connection conn = null;
@@ -19,28 +20,28 @@ public class Reader {
 	private PreparedStatement stmt = null;
 	private boolean connected = true;          // hope for the best
 	private final String WORLDID_READ = "SELECT worldID FROM sponsors_agencies.worlds ORDER BY creationDate";
-	private final String WORLD_READ = "SELECT worldID, " +
-			"idworld," + 
-			"worldID," +  
-			"creationDate," + 
-			"initialNumberOfSponsors," +
-			"initialNumberOfAgencies,"+
-			"cutDownModel," +
-			"allocationMethod," + 
-			"worldSize," +
-			"sponsorSigmaFactor," +
-			"sponsorMoney," +
-			"agencyMoney," +
-			"agencyMoneyReserveFactor," +
-			"agencySigmaFactor," +
-			"agencyRequirementNeed," +
-			"agencyRequirementSigma," +
-			"sightOfAgency," +
-			"moveRate," +
-			"pickRandomSponsor," +
-			"numberOfIterations, " +
-			"baseRisk " +
-			"FROM sponsors_agencies.worlds WHERE worldID = ?";
+	private final String WORLD_READ = 	"SELECT worldID, " +
+												"idworld," + 
+												"worldID," +  
+												"creationDate," + 
+												"initialNumberOfSponsors," +
+												"initialNumberOfAgencies,"+
+												"cutDownModel," +
+												"allocationMethod," + 
+												"worldSize," +
+												"sponsorSigmaFactor," +
+												"sponsorMoney," +
+												"agencyMoney," +
+												"agencyMoneyReserveFactor," +
+												"agencySigmaFactor," +
+												"agencyRequirementNeed," +
+												"agencyRequirementSigma," +
+												"sightOfAgency," +
+												"moveRate," +
+												"moveMethod," + 
+												"numberOfIterations, " +
+												"baseRisk " +
+										"FROM sponsors_agencies.worlds WHERE worldID = ?";
 	ResultSet rs = null;
 	Settings settings;
 
@@ -58,13 +59,11 @@ public class Reader {
 		}
 		if (connected){
 			try{ 
-				stmt = conn.prepareStatement(WORLDID_READ);
-				rs = stmt.executeQuery();	
+				stmt 	= conn.prepareStatement(WORLDID_READ);
+				rs 		= stmt.executeQuery();	
 				while (rs.next()){
 					resultList.add(rs.getString("worldID"));
 				}
-
-
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -72,7 +71,6 @@ public class Reader {
 				try{
 					if (stmt != null)
 						stmt.close();
-
 				} 
 				catch(SQLException sqlex){sqlex.printStackTrace(); 
 				try {
@@ -110,6 +108,7 @@ public class Reader {
 					wsi[1] = Integer.parseInt(wsS[1]);
 					CutDownModel 		cm = CutDownModel.convert(rs.getString("cutDownModel"));
 					AllocationMethod 	am = AllocationMethod.convert(rs.getString("allocationMethod"));
+					MoveMethod          mm = MoveMethod.convert(rs.getString("moveMethod"));
 					world = new World(rs.getInt("numberofiterations"),
 							rs.getInt("initialNumberOfSponsors"),
 							rs.getInt("initialNumberOfAgencies"),
@@ -127,6 +126,7 @@ public class Reader {
 							WriteMethod.NONE,
 							am,
 							rs.getDouble("moveRate"),
+							mm,
 							1.02,
 							rs.getDouble("baseRisk"),
 							null);

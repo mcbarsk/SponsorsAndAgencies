@@ -5,8 +5,8 @@ public final class Settings {
 		private final String saveLocation = "C:\\Data\\";
 		private final String dbConnector = "com.mysql.jdbc.Driver";
 		private final String user = "root";
-		//private String pw   = "1064"; //"?Hard2type!";
-		private final String pw   = "?Hard2type!";
+		private String pw   = "1064"; //"?Hard2type!";
+		// private final String pw   = "?Hard2type!";
 	
 
 	/*

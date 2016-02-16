@@ -17,51 +17,51 @@ import dk.ms.SponsorsAndAgenciesModel.Writer.WriterSQL;
 import dk.ms.Statistics.Statistics;
 
 public class World {
-	private String 				worldID;
-	private Timestamp           creationDate;
-	private int 				initialNumberOfSponsors;
-	private int 				initialNumberOfAgencies;
-	private CutDownModel		cutDownModel;
-	private int[] 				worldSize = new int[] {5,5};
-	private ArrayList<Agency> 	LAgencies;
-	private ArrayList<Sponsor> 	LSponsors;
-	private Utilities	        sponsorUtilities; 
-	private Utilities			agencyUtilities;	
-	private double				sponsorSigmaFactor 			=  6; 
-	private double				sponsorMoney				= 10;
-	private double 				agencyMoney					= 50;
-	private int					agencyMoneyReserveFactor	=  5;
-	private double				agencySigmaFactor         	=  6;
-	private double				agencyRequirementNeed		= 0.92;
-	private double				agencyRequirementSigma		= 0.2;
-	private double				sightOfAgency				= 2;
-	private double 				moveRate					= 0.5; // how far should the agency move.
-	private MoveMethod			moveMethod;
-	private int					numberOfIterations			= 1000;
-	private int					totalNumberOfAgencies 		= 0; // singleton to ensure new agencies get a unique number
-	private double 				budgetIncrease				= 1.02; // the idea was to increase the agency budget per iteration. Whether this is necessary must be investigated.
-	private double 				baseRisk					= 0.25; // used for calculating real risk. This is used by the funding algorithm.
-	private static boolean				respectSponsorMoney;		// specifies the sponsor can't be over-allocated by more than one agency.
-	private WriteMethod			writeMethod;		// ENUM for creating the writer object.
-	private AllocationMethod	allocationMethod; // ENUM for the allocation algorithms
+	private String 					worldID;
+	private Timestamp           	creationDate;
+	private int 					initialNumberOfSponsors;
+	private int 					initialNumberOfAgencies;
+	private CutDownModel			cutDownModel;
+	private int[] 					worldSize = new int[] {5,5};
+	private ArrayList<Agency> 		LAgencies;
+	private ArrayList<Sponsor> 		LSponsors;
+	private Utilities	        	sponsorUtilities; 
+	private Utilities				agencyUtilities;	
+	private double					sponsorSigmaFactor 			=  6; 
+	private double					sponsorMoney				= 10;
+	private double 					agencyMoney					= 50;
+	private int						agencyMoneyReserveFactor	=  5;
+	private double					agencySigmaFactor         	=  6;
+	private double					agencyRequirementNeed		= 0.92;
+	private double					agencyRequirementSigma		= 0.2;
+	private double					sightOfAgency				= 2;
+	private double 					moveRate					= 0.5; // how far should the agency move.
+	private MoveMethod				moveMethod;							// move specified distance, or percentage of distance between agency and sponsor
+	private int						numberOfIterations			= 1000;
+	private int						totalNumberOfAgencies 		= 0; 	// singleton to ensure new agencies get a unique number
+	private double 					budgetIncrease				= 1.02; // the idea was to increase the agency budget per iteration. Whether this is necessary must be investigated.
+	private double 					baseRisk					= 0.25; // used for calculating real risk. This is used by the funding algorithm.
+	private static boolean			respectSponsorMoney;		// specifies the sponsor can't be over-allocated by more than one agency.
+	private WriteMethod				writeMethod;		// ENUM for creating the writer object.
+	private AllocationMethod		allocationMethod; // ENUM for the allocation algorithms
 	private SponsorsAndAgenciesWriter	writer;	// the writer object ensures data will be written. The actual object type defines the actions, i.e. write to DB or file.
-	private ArrayList<Double> statisticList = new ArrayList<Double>();     // this list gathers the difference in agencySavings and is used for statistics
-	private NumberFormat		formatter = new DecimalFormat("#0.00000"); // for logging purposes. Just formatting a number.
-	private Settings			settings; // pertains to the settings object, which contains data regarding pw, user, db-specific settings and file location
-	private long 				start;
-	private long				end;
-	private long 				start1; // just for logging performance
-	private long				end1;   // just for logging performance
-	private boolean 			log = false; // true if runtime output to console.	
-	private List<publishProgress> listeners = new ArrayList<publishProgress>();   // to publish iterations
-	private int 				actualIteration = -1; // this is incremented per iteration and reported back to the listeners
-	private double 				mean;				// these are used for the calculated statistics
-	private double 				lcv;
-	private double				skewness;
-	private double				kurtosis;
-	private double				L_lcv;
-	private double 				L_skewness;
-	private double 				L_kurtosis;
+	private ArrayList<Double> 		statisticList = new ArrayList<Double>();     // this list gathers the difference in agencySavings and is used for statistics
+	private NumberFormat			formatter = new DecimalFormat("#0.00000"); // for logging purposes. Just formatting a number.
+	private Settings				settings; // pertains to the settings object, which contains data regarding pw, user, db-specific settings and file location
+	private long 					start;
+	private long					end;
+	private long 					start1; // just for logging performance
+	private long					end1;   // just for logging performance
+	private boolean 				log = false; // true if runtime output to console.	
+	private List<publishProgress> 	listeners = new ArrayList<publishProgress>();   // to publish iterations
+	private int 					actualIteration = -1; // this is incremented per iteration and reported back to the listeners
+	private double 					mean;				// these are used for the calculated statistics
+	private double 					lcv;
+	private double					skewness;
+	private double					kurtosis;
+	private double					L_lcv;
+	private double 					L_skewness;
+	private double 					L_kurtosis;
 
 	public World(int numberOfIterations,
 			int initialNumberOfSponsors, 
@@ -79,6 +79,7 @@ public class World {
 			WriteMethod writeMethod,
 			AllocationMethod allocationMethod,
 			double moveRate,
+			MoveMethod moveMethod,
 			double budgetIncrease,
 			double baseRisk,
 			Settings settings
@@ -96,6 +97,8 @@ public class World {
 			throw new IllegalArgumentException("Specify a cut down model");
 		if (allocationMethod == null)
 			throw new IllegalArgumentException("Specify an allocation method");
+		if (moveMethod == null)
+			throw new IllegalArgumentException("Specify a move method");
 
 		LAgencies 						= new ArrayList<Agency>(); // container for agencies
 		LSponsors 						= new ArrayList<Sponsor>(); // container for sponsors
@@ -107,6 +110,7 @@ public class World {
 		this.initialNumberOfAgencies 	= initialNumberOfAgencies;
 		this.worldSize 					= worldSize.clone(); // sets internal worldsize
 		this.cutDownModel				= cutDownModel;
+		this.allocationMethod			= allocationMethod;
 		sponsorUtilities				= new Utilities();
 		agencyUtilities					= new Utilities();
 		this.sponsorSigmaFactor			= sponsorSigmaFactor;
@@ -118,6 +122,7 @@ public class World {
 		this.agencyRequirementSigma		= agencyRequirementSigma;   // for setting real requirements
 		this.sightOfAgency				= sightOfAgency;
 		this.moveRate					= moveRate;
+		this.moveMethod					= moveMethod;
 		this.writeMethod				= writeMethod;
 		this.budgetIncrease				= budgetIncrease;
 		this.baseRisk					= baseRisk;
@@ -145,6 +150,7 @@ public class World {
 	public int getInitialNumberOfSponsors() {return initialNumberOfSponsors;}
 	public int getInitialNumberOfAgencies() {return initialNumberOfAgencies;}
 	public CutDownModel getCutDownModel() 	{return cutDownModel;}
+	public AllocationMethod getAllocationMethod(){return allocationMethod;}
 	public int[] getWorldSize() 			{return worldSize;}
 	public double getSponsorSigmaFactor() 	{return sponsorSigmaFactor;}
 	public double getSponsorMoney() 		{return sponsorMoney;}
@@ -167,158 +173,9 @@ public class World {
 	public double getL_kurtosis() 			{return L_kurtosis;}
 	public Settings getSettings()			{return settings;}
 
-	public void initialise(){	// Step 1
-		//setstart();
-		// Create Sponsors
-		for (int i = 0; i<initialNumberOfSponsors;i++ ){
-			LSponsors.add(new Sponsor(sponsorUtilities, worldID, creationDate,i,worldSize[0],worldSize[1],sponsorMoney,sponsorMoney/sponsorSigmaFactor));
-		} // 
-		// Create Agencies. Either the initial number is set, or the system calculates the number of agencies.
-		if (initialNumberOfAgencies > 0){
-			for(int i = 0; i<initialNumberOfAgencies;i++){
-				Agency agency;
-				agency = new Agency(agencyUtilities,worldID,creationDate,i,worldSize[0],worldSize[1], agencyMoney,agencyMoney/agencySigmaFactor,
-						sightOfAgency, agencyMoneyReserveFactor, budgetIncrease, baseRisk);
-				double budget = agency.getBudget();
-				agency.setMoneyNeeded(agencyUtilities, budget * agencyRequirementNeed, budget * agencyRequirementSigma);
-				LAgencies.add(agency);
-				totalNumberOfAgencies += 1;
-			}}
-		else{
-			totalNumberOfAgencies = generateNewAgencies();
-		}
-
-		//setend(); 
-		//log (start, end, "initialise");
-	}; // initialise
-
-	private void setstart(){ start = System.currentTimeMillis();}
-	private void setend(){ 	end = System.currentTimeMillis();}
-	private void logging (int i, int step){
-		if (log){
-			if (i==1) 
-				start1 = System.currentTimeMillis();
-			if (i==2){ 
-				end1 = System.currentTimeMillis();
-				log(start1, end1, "Step:" + step);
-			}
-		}
-	}
-	private static double distance(Sponsor sponsor, Agency agency){ // calculate distance between sponsor and agency
-		return Utilities.distance(agency.getPosition()[0],agency.getPosition()[1],sponsor.getPosition()[0],sponsor.getPosition()[1]); 
-	}; // distance	
-
-	public void seekPotentialSponsors(){ // Step 2
-		for (int i=0; i<LAgencies.size();i++){
-			Agency agency = LAgencies.get(i);
-			agency.getPossibleSponsors().clear(); // start all over with new potential sponsors
-			double maxdistance = agency.getEyesight();
-			for (int j=0;j<LSponsors.size();j++){
-				Sponsor sponsor = LSponsors.get(j);
-				if (maxdistance>=distance(sponsor,agency))
-					agency.addSponsor(sponsor);
-			}
-		}
-	} // seekPotentialSponsors
-
-	public void allocateSponsor(){ // Step 3
-		// setstart();
-		for (int i=0;i<LAgencies.size();i++){
-			Agency agency = LAgencies.get(i);
-			Sponsor sponsor = Allocate.allocateAgencies(allocationMethod, agency);			
-			if (!agency.noSponsors()){
-				agency.getSponsor().removeAgency(agency); // clean up old sponsor
-			}
-			agency.setSponsor(sponsor);
-			sponsor.addAgency(agency);
-
-		}
-
-		//setend();
-		//log(start,end,"step3");
-	} // allocateSponsor
-
-	public void allocateFunding(){ // Step 4
-		// TODO Consider over allocation
-		resetCutDown();                           // initialises the agencies. 
-		for (int i=0; i < LSponsors.size();i++){
-			Sponsor sponsor = LSponsors.get(i);
-			Payout.payout(cutDownModel, sponsor);
-		}
-	} // allocateFunding
-
-	public void spendBudget(){ // Step 5
-		for (int i=0;i<LAgencies.size();i++){
-			Agency agency = LAgencies.get(i);
-			agency.subtractsavings(agency.getMoneyNeeded() - agency.getPayout());
-		}
-	} // spendBudget
-
-	public void storeStatisticData(){
-		for (int i=0;i<LAgencies.size();i++){
-			Agency agency = LAgencies.get(i);
-			statisticList.add(agency.getSavingsdiff());
-		}
-	}
-
-	public void removeExhaustedAgencies(){ // Step 6
-		Agency agency;
-		ArrayList<Agency> tmpList = new ArrayList<Agency>(LAgencies); // tmplist created, so removal of entries doesn't affect the loop
-		for (int i=0;i<tmpList.size();i++){
-			agency = tmpList.get(i);
-			if (agency.getBroke()){
-				if (agency.getSponsor() != null)   // If a sponsor is assigned, then the sponsor need to be updated
-					agency.getSponsor().removeAgency(agency); 
-				LAgencies.remove(agency);              // remove the agency from the global container.
-			}
-		}
-	} // removeExhaustedAgencies
-
-	public int generateNewAgencies(){ // Step 7
-		double totalSponsorMoney = 0;
-		double totalAgencyRequirement = 0; //  
-		int i;
-		for (i=0; i<LSponsors.size();i++){
-			totalSponsorMoney += LSponsors.get(i).getMoney();
-		}
-		for (i=0;i<LAgencies.size();i++){
-			totalAgencyRequirement += LAgencies.get(i).getBudget();
-		}
-		double avgBudget = 0;
-		if (initialNumberOfAgencies == 0){
-			avgBudget = this.agencyMoney;
-		}
-		else
-			avgBudget = totalAgencyRequirement/LAgencies.size();
-		int newAgencies = (int)((totalSponsorMoney - totalAgencyRequirement) / avgBudget); // int cast rounds automatically.
-		newAgencies = (int)sponsorUtilities.gaussian(newAgencies, newAgencies * 0.02);
-		for (i=1;i<newAgencies;i++){
-			Agency agency;
-			totalNumberOfAgencies += 1;
-			agency = new Agency(agencyUtilities,worldID, creationDate,totalNumberOfAgencies,worldSize[0],worldSize[1], agencyMoney,agencyMoney/agencySigmaFactor,sightOfAgency, 
-					agencyMoneyReserveFactor, budgetIncrease, baseRisk);
-			agency.setMoneyNeeded(agencyUtilities, avgBudget, avgBudget * 0.02);
-			LAgencies.add(agency);
-
-		}
-		return newAgencies;
-	} // generateNewAgencies
-
-	public void setBudgetRequirements(){ // Step 8
-		/* New budgets are allocated.
-		 * These are allocated with the algorithm: current_budget *gauss(MU,SIGMA) where MU = 1 and SIGMA = 0.02, hence the constants.
-		 */
-		final double MU = 1;
-		final double SIGMA = 0.02;
-		for (int i=0;i< LAgencies.size();i++){
-			Agency agency = LAgencies.get(i);
-			agency.setNewBudget(agencyUtilities, MU,SIGMA); // completely new budget or increase as per rate?
-			agency.setMoneyNeeded(agencyUtilities, agency.getBudget() * agencyRequirementNeed, agency.getBudget() * agencyRequirementSigma);
-		}
-	}
 
 	public void orchestrateWorld(){
-		/* This method arranges all the steps and iterates.
+		/* This method orchestrates the simulation by performing the necessary steps in a set order and performs the iterations.
 		 */
 		initialise();
 		setstart();
@@ -342,17 +199,176 @@ public class World {
 		log(start,end,"iteration:" + numberOfIterations);
 	}
 
-	public void cleanupActivities(){
-		// Payoff is reset for all sponsors
-		for (int j=0;j<LSponsors.size();j++){
-			LSponsors.get(j).setPayoff(0);
+	
+	private void initialise(){	// Step 1
+		//setstart();
+		// Create Sponsors
+		for (int i = 0; i<initialNumberOfSponsors;i++ ){
+			LSponsors.add(new Sponsor(sponsorUtilities, worldID, creationDate,i,worldSize[0],worldSize[1],sponsorMoney,sponsorMoney/sponsorSigmaFactor));
+		} // 
+		// Create Agencies. Either the initial number is set, or the system calculates the number of agencies.
+		if (initialNumberOfAgencies > 0){
+			for(int i = 0; i<initialNumberOfAgencies;i++){
+				Agency agency;
+				agency = new Agency(agencyUtilities,worldID,creationDate,i,worldSize[0],worldSize[1], agencyMoney,agencyMoney/agencySigmaFactor,
+						sightOfAgency, agencyMoneyReserveFactor, budgetIncrease, baseRisk);
+				double budget = agency.getBudget();
+				agency.setMoneyNeeded(agencyUtilities, budget * agencyRequirementNeed, budget * agencyRequirementSigma);
+				LAgencies.add(agency);
+				totalNumberOfAgencies += 1;
+			}}
+		else{
+			totalNumberOfAgencies = generateNewAgencies();
 		}
+		//setend(); 
+		//log (start, end, "initialise");
+	}; // initialise
+
+	private void setstart(){ start = System.currentTimeMillis();}
+	private void setend(){ 	end = System.currentTimeMillis();}
+	private void logging (int i, int step){
+		if (log){
+			if (i==1) 
+				start1 = System.currentTimeMillis();
+			if (i==2){ 
+				end1 = System.currentTimeMillis();
+				log(start1, end1, "Step:" + step);
+			}
+		}
+	}
+	
+	private static double distance(Sponsor sponsor, Agency agency){ // calculate distance between sponsor and agency
+		return Utilities.distance(agency.getPosition()[0],agency.getPosition()[1],sponsor.getPosition()[0],sponsor.getPosition()[1]); 
+	}; // distance	
+
+	private void seekPotentialSponsors(){ // Step 2
+		for (int i=0; i<LAgencies.size();i++){
+			Agency agency = LAgencies.get(i);
+			agency.getPossibleSponsors().clear(); // start all over with new potential sponsors
+			double maxdistance = agency.getEyesight();
+			for (int j=0;j<LSponsors.size();j++){
+				Sponsor sponsor = LSponsors.get(j);
+				if (Double.compare(maxdistance,distance(sponsor,agency)) >= 0)
+					agency.addSponsor(sponsor);
+			}
+		}
+	} // seekPotentialSponsors
+
+	private void allocateSponsor(){ // Step 3
+		// setstart();
 		for (int i=0;i<LAgencies.size();i++){
 			Agency agency = LAgencies.get(i);
-			agency.clearSavingsDifference();
+			Sponsor sponsor = Allocate.allocateAgencies(allocationMethod, agency);			
+			if (!agency.noSponsors()){
+				agency.getSponsor().removeAgency(agency); // clean up old sponsor
+			}
+			agency.setSponsor(sponsor);
+			if (sponsor != null) // avoid null pointer error. It is potentially possible that a sponsor hasn't been found.
+				sponsor.addAgency(agency);
+		}
+		//setend();
+		//log(start,end,"step3");
+	} // allocateSponsor
+
+	private void allocateFunding(){ // Step 4
+		// TODO Implement allocation of funding
+		resetCutDown();                           // initialises each agency cutdown variable. 
+		// When this method terminates all relevant agencies will express whether they have been cut via the payout algorithms. 
+		for (int i=0; i < LSponsors.size();i++){
+			Sponsor sponsor = LSponsors.get(i);
+			Payout.payout(cutDownModel, sponsor); // private class handles the different payout models, based on the cutDownModel
+		}
+	} // allocateFunding
+
+	private void spendBudget(){ // Step 5
+		// the difference between money needed and what has been paid is adjusting the savings for the agencies
+		for (int i=0;i<LAgencies.size();i++){
+			Agency agency = LAgencies.get(i);
+			agency.subtractsavings(agency.getMoneyNeeded() - agency.getPayout());
+		}
+	} // spendBudget
+
+	private void storeStatisticData(){
+		for (int i=0;i<LAgencies.size();i++){
+			Agency agency = LAgencies.get(i);
+			statisticList.add(agency.getSavingsdiff());
 		}
 	}
 
+	private void removeExhaustedAgencies(){ // Step 6
+		// agencies without money are removed.
+		Agency agency;
+		ArrayList<Agency> tmpList = new ArrayList<Agency>(LAgencies); // tmplist created, so removal of entries doesn't affect the loop
+		for (int i=0;i<tmpList.size();i++){
+			agency = tmpList.get(i);
+			if (agency.getBroke()){
+				if (agency.getSponsor() != null)   // If a sponsor is assigned, then the sponsor need to be updated
+					agency.getSponsor().removeAgency(agency); 
+				LAgencies.remove(agency);              // remove the agency from the global container.
+			}
+		}
+	} // removeExhaustedAgencies
+
+	private int generateNewAgencies(){ // Step 7
+		// new agencies are created if the total money in the world exceeds the current agencies' accumulated need.
+		double totalSponsorMoney = 0;
+		double totalAgencyRequirement = 0; //  
+		int i;
+		for (i=0; i<LSponsors.size();i++){
+			totalSponsorMoney += LSponsors.get(i).getMoney();
+		}
+		for (i=0;i<LAgencies.size();i++){
+			totalAgencyRequirement += LAgencies.get(i).getBudget();
+		}
+		double avgBudget = 0;
+		if (initialNumberOfAgencies == 0){
+			avgBudget = this.agencyMoney;
+		}
+		else
+			avgBudget = totalAgencyRequirement/LAgencies.size();
+		int newAgencies = (int)((totalSponsorMoney - totalAgencyRequirement) / avgBudget); // the cast to int rounds automatically.
+		newAgencies = (int)sponsorUtilities.gaussian(newAgencies, newAgencies * 0.02); // this gaussian pseudo-random is not REALLY necessary but leaves a bit of probability in relation to how many new agencies to create.
+		for (i=1;i<newAgencies;i++){
+			Agency agency;
+			totalNumberOfAgencies += 1;
+			agency = new Agency(agencyUtilities,worldID, creationDate,totalNumberOfAgencies,worldSize[0],worldSize[1], agencyMoney,agencyMoney/agencySigmaFactor,sightOfAgency, 
+					agencyMoneyReserveFactor, budgetIncrease, baseRisk);
+			agency.setMoneyNeeded(agencyUtilities, avgBudget, avgBudget * 0.02);
+			LAgencies.add(agency);
+
+		}
+		return newAgencies;
+	} // generateNewAgencies
+
+	private void setBudgetRequirements(){ // Step 8
+		/* New budgets are allocated.
+		 * These are allocated with the algorithm: current_budget *gauss(MU,SIGMA) where MU = 1 and SIGMA = 0.02, hence the constants.
+		 */
+		final double MU = 1;
+		final double SIGMA = 0.02;
+		for (int i=0;i< LAgencies.size();i++){
+			Agency agency = LAgencies.get(i);
+			agency.setNewBudget(agencyUtilities, MU,SIGMA); // completely new budget or increase as per rate?
+			agency.setMoneyNeeded(agencyUtilities, agency.getBudget() * agencyRequirementNeed, agency.getBudget() * agencyRequirementSigma);
+		}
+	} // setBudgetRequirements
+
+	private void cleanupActivities(){
+		// Payoff is reset for all sponsors
+		for (int j=0;j<LSponsors.size();j++){
+			Sponsor sponsor = LSponsors.get(j); 
+			sponsor.setPayoff(0);
+			sponsor.clearStatus(); // the telltale status is cleared.
+		}
+		// 
+		for (int i=0;i<LAgencies.size();i++){
+			Agency agency = LAgencies.get(i);
+			agency.clearSavingsDifference();
+			agency.clearStatus();
+		}
+	}
+
+	
 	public void write(int iteration){
 		// this routine calls the generic writer and asks it to write data to wherever the implementation puts the data.
 		if (writer != null){
@@ -366,42 +382,47 @@ public class World {
 			}
 	} // write
 
+	
 	public void addListener(publishProgress add){
+		// this adds any listener who is interested in hearing what iteration the program is currently at. The listener must implement the publishProgress interface.
 		listeners.add(add);
 	}
 
 
-	public void notifyListeners() {
+	private void notifyListeners() { // this routine tells the registered listeners which iteration the program has reached.
 		for (publishProgress pl : listeners){
 			pl.getProgress(actualIteration + ""); //  + "/" + numberOfIterations);
 		}
 	}
 
+	
 	public void move(){
-		moveCloserToSponsor(LAgencies, LSponsors, moveRate);
+		moveCloserToSponsor(LAgencies, LSponsors, moveRate, moveMethod);
 	} // move
+
+	
 	//  private utility methods
 	private void log(long start, long end, String s){ // for debugging purposes
 
 		System.out.println("Execution time is " + formatter.format((end - start) /1000d) + " seconds - " + s);
 	}// move
 
-
-
+	
 	private void resetCutDown(){
 		for (int i=0;i<LAgencies.size();i++){
 			LAgencies.get(i).setCutDown(false);
 		}
 	}
 
-	private void moveCloserToSponsor(ArrayList<Agency> Agencies, ArrayList<Sponsor> Sponsors, double moveRate){
+	
+	private void moveCloserToSponsor(ArrayList<Agency> Agencies, ArrayList<Sponsor> Sponsors, double moveRate, MoveMethod moveMethod){
 		int agencySize = Agencies.size();
 		for (int i=0;i<agencySize;i++){
 			Agency agency = Agencies.get(i);
 			Sponsor sponsor = agency.getSponsor(); 
 			if (sponsor != null){
 				double dist = distance(sponsor,agency);
-				if (moveRate > distance(sponsor, agency) && dist > 0){
+				if ((Double.compare(moveRate,distance(sponsor, agency)) > 0) && dist > 0){
 					agency.setPosition(sponsor.getPosition()[0], sponsor.getPosition()[1]);
 				}
 				else{
@@ -424,6 +445,13 @@ public class World {
 					double angle;
 					double xDelta = 0;
 					double yDelta = 0;
+					switch (moveMethod){
+					case PERCENTAGE_OF_DISTANCE :  // moveRate is expressed as a percentage of the distance between agency and sponsor
+						moveRate = moveRate * dist;
+						break;
+					case REAL_DISTANCE : // moveRate is expressed as a distance, thus no calculation is required 
+						break;
+					}
 					switch (sw){	
 					case 1:     // Agency lower to the right of the sponsor
 						sinA = (agencyPos[0] - sponsorPos[0])/dist;
@@ -470,12 +498,14 @@ public class World {
 				if (Double.compare(x,worldSize[0]) > 0)  {x = (x - (x - worldSize[0])); } // if out of bounds, it bounces back into the world
 				if (Double.compare(x,0) < 0)             {x = Math.abs(x);} // same if it bounces the other way out of bounds 
 				if (Double.compare(y,worldSize[1]) > 0)  {y = (y - (y - worldSize[1])); } // if out of bounds, it bounces back into the world
-				if (Double.compare(y,0) < 0)             {y = Math.abs(y);} // same if it bounces the other way out of bounds 
+				if (Double.compare(y,0) < 0)             {y = Math.abs(y);} // same if it bounces the other way out of bounds
+				agency.setPosition(x, y);
 			}
 		} // moveCloserToSponsor
 	} // class Moving
 
-	public void calculateStatistics(){
+	
+	private void calculateStatistics(){
 		Statistics statistics = new Statistics();
 		statistics.setData(statisticList);
 		statistics.calculate();
@@ -509,8 +539,6 @@ public class World {
 			case CLOSEST_DISTANCE : 
 				foundSponsor = closestDistance(agency);
 				break;
-			case LOWEST_PREVIOUS_CUT : 
-				break;
 			case LOYALTY_PROBABILITY : 
 				foundSponsor = loyaltySponsor(agency);
 				break;
@@ -524,9 +552,10 @@ public class World {
 			return foundSponsor;
 		} // allocateAgencies
 
+		
 		private static Sponsor loyaltySponsor(Agency agency){
 			// this routine calculates a simple weighted random based upon loyalty. 
-			// it sets up an array where it percentagewise per sponsor adds to a double until the value 1 is reached. 
+			// it sets up an array where it percentage wise per sponsor adds to a double until the value 1 is reached. 
 			// loyalty is part of this so if the agency has had the same sponsor for three rounds and there are 4 potential sponsors, the array would be set up like this:
 			// [0] = 0..3/6  ----> 6 = number of sponsors + loyalty count - 1
 			// [1] = 3/6..4/6
@@ -555,6 +584,7 @@ public class World {
 			}
 			return agency.getPossibleSponsors().get(resultIndex); // finally return the sponsor
 		} // loyaltySponsor
+
 		
 		private static Sponsor randomSponsor(Agency agency){
 			// picks a completely random sponsor as long as it is within eyesight.
@@ -579,16 +609,45 @@ public class World {
 			else
 				return null;
 		} // closestDistance
-		
-		private static Sponsor lowestPreviousCut(Agency agency){
-			// TODO implement lowestpreviousCut
-			return null;
-		}
+
 		
 		private static Sponsor survivalMode(Agency agency){
-			// TODO implement survivalmode
-			return null;
-		}
+			// If agency does not die with a repetition of the previous payout, it will stay with it's current sponsor. 
+			// Otherwise it will search for a sponsor with free resources as per last iteration.
+			// If no sponsor with free resources can be found, it will stick to it's current sponsor.
+			// This is only relevant if the agency actually had a sponsor to begin with. If this is not the case and it can't find a sponsor based 
+			// upon free resources, it will become desperate and pick the closest sponsor.
+			boolean willSurvive 	= false;
+			Sponsor sponsor 		= agency.getSponsor();
+			Sponsor possibleSponsor = null;
+
+			if (sponsor != null){
+				if (Double.compare(agency.getSavings() - agency.getMoneyNeeded() + agency.getPayout(), 0) > 0){ // still estimated enough money
+					willSurvive = true;
+				}
+			}
+			if (willSurvive){
+				return sponsor;
+			}
+			else{	
+				ArrayList<Sponsor> localPossibleSponsors = agency.getPossibleSponsors();
+				int size = localPossibleSponsors.size();
+				double maxdist = 99999;
+				Sponsor chosenSponsor = null;
+				for (int i = 0; i < size; i++) {
+					possibleSponsor = localPossibleSponsors.get(i);
+					double distance = distance(possibleSponsor,agency);
+					if (Double.compare(maxdist, distance) > 0 && Double.compare(possibleSponsor.getMoney(), possibleSponsor.getPayoff()) > 0){ // // sponsor is closer and has available money
+						maxdist = distance; 
+						chosenSponsor = possibleSponsor;
+					}
+				}
+				if (chosenSponsor != null) // Sponsor has been found
+					return chosenSponsor;
+				else 
+					return closestDistance(agency); // no sponsor has been found. Closest sponsor will be returned. 
+			}
+		} // survivalMode
 		
 		
 
@@ -600,25 +659,17 @@ public class World {
 			for (int i=0; i<size;i++){
 				Sponsor sponsor = agency.getPossibleSponsors().get(i);
 				double distance = distance(sponsor, agency);
-				if (respectSponsorMoney) {
-					if (agency.getBudget() + calculatePayoff(sponsor, agency) < sponsor.getMoney())
-						if (distance < minDistance){
-							minDistance = distance;
-							returnValue = i;
-						}
-				}
-				else{
+				if (agency.getBudget() + calculatePayoff(sponsor, agency) < sponsor.getMoney()){
 					if (distance < minDistance){
 						minDistance = distance;
 						returnValue = i;
 					}
-					
-				}
-					
+				}	
 			}
 			return returnValue;
 		} // returnClosestSponsorIndex
 
+		
 		private static int returnClosestSponsorIndexHighestValue(Agency agency){
 			int returnValue = -1;
 			double minDistance = 99999;
@@ -637,21 +688,25 @@ public class World {
 			return returnValue;
 		}// returnClosestSponsorIndexHighestValue
 
+		
 		private static double calculatePayoff(Sponsor sponsor, Agency agency){
 			// calculates potential money a sponsor is already paying, which is a factor for finding sponsors.
-			// agency is an optional input. If populated, it will not add the actual agency's budget to the total payout.
+			// agency is an optional input. If populated, the routine will not add the actual agency's budget to the total payout.
 			double returnValue = 0;
-			for (int i=0;i<sponsor.getAgencies().size();i++){
-				Agency agencylocal;
-				agencylocal = sponsor.getAgencies().get(i);
-				if (agency == null || agency != agencylocal) // avoid adding input agency budget.
-					returnValue += agencylocal.getBudget();
+			if (respectSponsorMoney) { // only calculate if sponsor payoff is considered. Otherwise this routine will return 0 as payoff.
+				for (int i=0;i<sponsor.getAgencies().size();i++){
+					Agency agencylocal;
+					agencylocal = sponsor.getAgencies().get(i);
+					if (agency == null || agency != agencylocal) // avoid adding input agency budget.
+						returnValue += agencylocal.getBudget();
+				}
 			}
 			return returnValue;
 		} // calculatePayoff
 
 	} // class Allocate
 
+	
 	private static class Payout { // private class for calculating payout based on payment model
 		private static void payout(CutDownModel model, Sponsor sponsor){
 			/* If a sponsor has sufficient money, the cutDownModel is never used. Hence the invocation of sufficientMoneyForSponsor
@@ -677,6 +732,7 @@ public class World {
 
 		}; // Payout
 
+		
 		private static boolean sufficientMoneyForSponsor(Sponsor sponsor){
 			int lines = sponsor.getAgencies().size();
 			Agency agency;
@@ -688,6 +744,7 @@ public class World {
 			return totalMoneyNeeded < sponsor.getMoney();
 		} // sufficientMoneyForSponsor
 
+		
 		private static void payoutSufficient(Sponsor sponsor){
 			double totalpayout = 0;
 			int lines = sponsor.getAgencies().size();
@@ -702,6 +759,7 @@ public class World {
 
 		} // payoutSufficient
 
+		
 		private static void payoutPercentageRate(double rate,Sponsor sponsor){
 			double payout = 0;
 			int lines = sponsor.getAgencies().size();
@@ -717,6 +775,7 @@ public class World {
 			sponsor.setPayoff(payout); 				// finally set the payoff for the sponsor
 		} // payoutPercentageRate
 
+		
 		private static void payoutBasedOnRisk(Sponsor sponsor){
 			// finds a set of agencies, which will be cut percentage wise. This is done by initially finding the candidates 
 			// at baserisk > random()
@@ -761,6 +820,7 @@ public class World {
 
 		} // payoutBasedOnRisk
 
+		
 		private static double calculatePercentage(Sponsor sponsor){
 			double totalAmount = 0;
 			double totalAgencyNeed = 0;
@@ -774,13 +834,14 @@ public class World {
 			}
 			else{
 				percentageOfPayout = (1 - (totalAgencyNeed - totalAmount)/totalAgencyNeed); 
-				if (percentageOfPayout > 1) 
+				if (Double.compare(percentageOfPayout,1) > 0) 
 					percentageOfPayout = 1;
 				return percentageOfPayout;
 			}	
 		} // calculatePercentage
 	} // class Payout
 
+	
 	private static double getTotalAgencyNeed(Sponsor sponsor){
 		double totalAgencyNeed = 0;
 		for (int i = 0;i<sponsor.getAgencies().size();i++){
@@ -789,8 +850,6 @@ public class World {
 		}
 		return totalAgencyNeed;
 	} // getTotalAgencyNeed
-
-
 
 
 } // Class World

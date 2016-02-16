@@ -7,15 +7,17 @@ import java.util.ArrayList;
 
 public class Sponsor implements Cloneable{
 	// attributes	
-	private String		worldID;
-	private Timestamp creationDate;
-	private int name;
-	private double width;
-	private double height;
-	private double money;
-	private ArrayList<Agency> LAgency;
-	private double[] position;
-	private double payoff;
+	private String				worldID;
+	private Timestamp 			creationDate;
+	private int 				name;
+	private double 				width;
+	private double 				height;
+	private double 				money;
+	private ArrayList<Agency> 	LAgency;
+	private double[] 			position;
+	private double 				payoff;
+	private String 				status = "";
+	private double 				previousReserve; 
 
 	// constructor	
 	public Sponsor(Utilities util,String worldID,Timestamp creationDate, int name, int width, int height, double mu, double sigma){
@@ -29,8 +31,10 @@ public class Sponsor implements Cloneable{
 		this.position[0] 	= Math.random() * width;
 		this.position[1] 	= Math.random() * height;
 		this.money 			= util.gaussian(mu, sigma); // based on initial money set up in master.
+		this.previousReserve= this.money;
+		
 		LAgency 			= new ArrayList<Agency>();
-	}
+	} // Constructor
 	
 	public Object clone(){
 		try {
@@ -39,23 +43,19 @@ public class Sponsor implements Cloneable{
 		catch (Exception e){
 			return null;
 		}
-	}
+	} // Clone
 	
 	// simple getters	
-	public int getName() {return name;}
-
-	public double getWidth() {return width;}
-
-	public double getHeight() {return height;}
-
-	public double[] getPosition() {return position;}
-
-	public double getPayoff() {return payoff;}
-
-	public double getMoney() {return money;}
+	public int getName() 				{return name;}
+	public double getWidth() 			{return width;}
+	public double getHeight() 			{return height;}
+	public double[] getPosition() 		{return position;}
+	public double getPayoff() 			{return payoff;}
+	public double getMoney() 			{return money;}
+	public Timestamp getCreationDate() 	{return creationDate;}
+	public String getStatus()			{return status;}
+	public Double getPrevReserve()  	{return previousReserve;}
 	
-	public Timestamp getCreationDate() { return creationDate;}
-
 	// simple setters	
 	public void setWidth(double width) {
 		this.width = width;
@@ -74,10 +74,12 @@ public class Sponsor implements Cloneable{
 
 	public void setPayoff(double payoff) {
 		this.payoff = payoff;
+		previousReserve = money - this.payoff;
 	}
 
 	public void addAgency(Agency agency){
 		LAgency.add(agency);
+		status = status + "agency added:" + agency.getName() + ",";
 	}
 
 	public void removeAgency(Agency agency){
@@ -90,6 +92,10 @@ public class Sponsor implements Cloneable{
 
 	public Object getWorldID() {
 		return worldID;
+	}
+	
+	public void clearStatus(){
+		status = "";
 	}
 
 }
