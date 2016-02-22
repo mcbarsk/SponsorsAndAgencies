@@ -31,6 +31,7 @@ public class Reader {
 												"worldSize," +
 												"sponsorSigmaFactor," +
 												"sponsorMoney," +
+												"respectSponsorMoney," + 
 												"agencyMoney," +
 												"agencyMoneyReserveFactor," +
 												"agencySigmaFactor," +
@@ -106,6 +107,7 @@ public class Reader {
 					int[] wsi = new int[2];
 					wsi[0] = Integer.parseInt(wsS[0]);
 					wsi[1] = Integer.parseInt(wsS[1]);
+					boolean rsm = rs.getInt("respectSponsorMoney") == 1 ? true : false;
 					CutDownModel 		cm = CutDownModel.convert(rs.getString("cutDownModel"));
 					AllocationMethod 	am = AllocationMethod.convert(rs.getString("allocationMethod"));
 					MoveMethod          mm = MoveMethod.convert(rs.getString("moveMethod"));
@@ -116,8 +118,8 @@ public class Reader {
 							wsi,
 							rs.getDouble("sponsorSigmaFactor"),
 							rs.getDouble("sponsorMoney"),
+							rsm,
 							rs.getDouble("agencyMoney"),
-
 							rs.getInt("agencyMoneyReserveFactor"),
 							rs.getDouble("agencySigmaFactor"),
 							rs.getDouble("agencyRequirementNeed"),

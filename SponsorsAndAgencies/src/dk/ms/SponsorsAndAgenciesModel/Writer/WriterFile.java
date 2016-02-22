@@ -89,9 +89,10 @@ public class WriterFile extends SponsorsAndAgenciesWriter{
 	} // prepare
 	
 	@Override
-	public void writeStatistics(World world, Statistics statistics){
+	public void writeStatistics(World world){
 		// TODO implement this
 	} // writeStatistics
+	
 	
 	private void createHeaderLine(World world){
 		// TODO implement additional fields.

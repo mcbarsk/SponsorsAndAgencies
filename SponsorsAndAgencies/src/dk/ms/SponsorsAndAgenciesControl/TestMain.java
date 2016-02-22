@@ -17,6 +17,7 @@ public class TestMain {
 		int[] ws 						= {5,5};
 		double sponsorSigmaFactor 		= 6; 
 		double sponsorMoney 			= 50;
+		boolean respectSponsorMoney     = false;
 		double agencyMoney 				= 10 ;
 		int agencyMoneyReserveFactor 	= 5;
 		double agencySigmaFactor 		= 6;
@@ -63,7 +64,7 @@ public class TestMain {
 		}
 		else{
 			world = new World(numberOfIterations, initialNumberOfSponsors,initialNumberOfAgencies, 
-					cm, ws,sponsorSigmaFactor, sponsorMoney, agencyMoney,agencyMoneyReserveFactor,
+					cm, ws,sponsorSigmaFactor, sponsorMoney, respectSponsorMoney,agencyMoney,agencyMoneyReserveFactor,
 					agencySigmaFactor,agencyRequirementNeed,
 					agencyRequirementSigma,sightOfAgency,  writeMethod,am, moveRate, mm,
 					budgetIncrease,baseRisk,settings);

@@ -19,7 +19,7 @@ import javax.swing.SwingWorker;
 import javax.swing.JTextArea;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.EtchedBorder;
-
+import javax.swing.JOptionPane;
 import dk.ms.SponsorsAndAgenciesControl.*;
 import dk.ms.SponsorsAndAgenciesModel.Reader.Reader;
 
@@ -29,6 +29,7 @@ import javax.swing.JButton;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import javax.swing.JScrollPane;
@@ -39,6 +40,7 @@ import javax.swing.JMenuItem;
 import java.awt.SystemColor;
 import javax.swing.UIManager;
 import net.miginfocom.swing.MigLayout;
+import javax.swing.JCheckBox;
 
 public class WorldGUIMain {
 
@@ -63,6 +65,8 @@ public class WorldGUIMain {
 	private JComboBox<WriteMethod> combo_writeMethod;
 	private JComboBox<MoveMethod> combo_moveMethod;
 	private JComboBox<String> combo_WorldID;
+	private JComboBox<AllocationMethod> combo_allocation;
+	private JCheckBox chckbxSponsorMoney;
 
 	private JButton btnRunSimulation;
 	private Settings settings;
@@ -187,24 +191,24 @@ public class WorldGUIMain {
 							.addComponent(btnRunSimulation))
 						.addGroup(gl_panel_1.createSequentialGroup()
 							.addContainerGap()
-							.addComponent(progressBar, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-						.addGroup(gl_panel_1.createSequentialGroup()
-							.addContainerGap()
-							.addComponent(panel_2, GroupLayout.PREFERRED_SIZE, 367, GroupLayout.PREFERRED_SIZE))
-						.addGroup(gl_panel_1.createSequentialGroup()
-							.addContainerGap()
-							.addComponent(panel_3, GroupLayout.PREFERRED_SIZE, 285, GroupLayout.PREFERRED_SIZE))
+							.addComponent(progressBar, GroupLayout.DEFAULT_SIZE, 397, Short.MAX_VALUE))
 						.addGroup(gl_panel_1.createSequentialGroup()
 							.addContainerGap()
 							.addGroup(gl_panel_1.createParallelGroup(Alignment.LEADING)
-								.addComponent(panel_4, GroupLayout.PREFERRED_SIZE, 329, GroupLayout.PREFERRED_SIZE)
+								.addComponent(panel_4, 0, 0, Short.MAX_VALUE)
 								.addComponent(lblProgress)
 								.addGroup(gl_panel_1.createSequentialGroup()
 									.addComponent(lblWorldId)
 									.addPreferredGap(ComponentPlacement.UNRELATED)
-									.addComponent(combo_WorldID, GroupLayout.PREFERRED_SIZE, 328, GroupLayout.PREFERRED_SIZE)))))
+									.addComponent(combo_WorldID, GroupLayout.PREFERRED_SIZE, 328, GroupLayout.PREFERRED_SIZE))))
+						.addGroup(gl_panel_1.createSequentialGroup()
+							.addContainerGap()
+							.addComponent(panel_3, GroupLayout.DEFAULT_SIZE, 397, Short.MAX_VALUE))
+						.addGroup(gl_panel_1.createSequentialGroup()
+							.addContainerGap()
+							.addComponent(panel_2, GroupLayout.DEFAULT_SIZE, 397, Short.MAX_VALUE)))
 					.addPreferredGap(ComponentPlacement.RELATED)
-					.addComponent(panel, GroupLayout.DEFAULT_SIZE, 601, Short.MAX_VALUE)
+					.addComponent(panel, GroupLayout.DEFAULT_SIZE, 591, Short.MAX_VALUE)
 					.addContainerGap())
 		);
 		gl_panel_1.setVerticalGroup(
@@ -215,11 +219,11 @@ public class WorldGUIMain {
 						.addComponent(combo_WorldID, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addComponent(panel_4, GroupLayout.PREFERRED_SIZE, 310, GroupLayout.PREFERRED_SIZE)
-					.addGap(18)
+					.addPreferredGap(ComponentPlacement.RELATED)
 					.addComponent(panel_3, GroupLayout.PREFERRED_SIZE, 62, GroupLayout.PREFERRED_SIZE)
-					.addPreferredGap(ComponentPlacement.UNRELATED)
+					.addPreferredGap(ComponentPlacement.RELATED)
 					.addComponent(panel_2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-					.addGap(18)
+					.addGap(36)
 					.addComponent(progressBar, GroupLayout.PREFERRED_SIZE, 13, GroupLayout.PREFERRED_SIZE)
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addComponent(btnRunSimulation)
@@ -276,72 +280,83 @@ public class WorldGUIMain {
 		combo_writeMethod.setAlignmentX(Component.LEFT_ALIGNMENT);
 		combo_writeMethod.setAlignmentY(Component.TOP_ALIGNMENT);
 		combo_writeMethod.setModel(new DefaultComboBoxModel<WriteMethod>(WriteMethod.values()));
+		
+		combo_allocation = new JComboBox<AllocationMethod>();
+		combo_allocation.setModel(new DefaultComboBoxModel<AllocationMethod>(AllocationMethod.values()));
+		
+		JLabel lblAllocation = new JLabel("Allocation");
 		GroupLayout gl_panel_4 = new GroupLayout(panel_4);
 		gl_panel_4.setHorizontalGroup(
-				gl_panel_4.createParallelGroup(Alignment.LEADING)
+			gl_panel_4.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_panel_4.createSequentialGroup()
-						.addContainerGap()
-						.addGroup(gl_panel_4.createParallelGroup(Alignment.LEADING)
-								.addComponent(lblIterations)
-								.addComponent(lblSponsors)
-								.addComponent(lblAgencies)
-								.addComponent(lblWorldSize)
-								.addComponent(lblCutDownModel)
-								.addComponent(lblWriteMethod))
-						.addGroup(gl_panel_4.createParallelGroup(Alignment.LEADING)
+					.addContainerGap()
+					.addGroup(gl_panel_4.createParallelGroup(Alignment.LEADING)
+						.addComponent(lblIterations)
+						.addComponent(lblSponsors)
+						.addComponent(lblAgencies)
+						.addComponent(lblWorldSize)
+						.addComponent(lblCutDownModel)
+						.addComponent(lblWriteMethod)
+						.addComponent(lblAllocation))
+					.addGroup(gl_panel_4.createParallelGroup(Alignment.LEADING)
+						.addGroup(gl_panel_4.createSequentialGroup()
+							.addGap(9)
+							.addGroup(gl_panel_4.createParallelGroup(Alignment.LEADING, false)
 								.addGroup(gl_panel_4.createSequentialGroup()
-										.addGap(9)
-										.addGroup(gl_panel_4.createParallelGroup(Alignment.TRAILING, false)
-												.addGroup(Alignment.LEADING, gl_panel_4.createSequentialGroup()
-														.addComponent(Inp_world_X, GroupLayout.PREFERRED_SIZE, 27, GroupLayout.PREFERRED_SIZE)
-														.addPreferredGap(ComponentPlacement.RELATED)
-														.addComponent(Inp_world_Y, GroupLayout.PREFERRED_SIZE, 26, GroupLayout.PREFERRED_SIZE))
-												.addComponent(Inp_sponsors, Alignment.LEADING, 0, 0, Short.MAX_VALUE)
-												.addComponent(Inp_iterations, Alignment.LEADING)
-												.addComponent(Inp_Agencies, Alignment.LEADING, 0, 0, Short.MAX_VALUE)))
-								.addGroup(gl_panel_4.createSequentialGroup()
-										.addPreferredGap(ComponentPlacement.RELATED)
-										.addGroup(gl_panel_4.createParallelGroup(Alignment.LEADING)
-												.addComponent(combo_CutdownModel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-												.addComponent(combo_writeMethod, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))))
-						.addGap(319))
-				);
+									.addComponent(Inp_world_X, GroupLayout.PREFERRED_SIZE, 27, GroupLayout.PREFERRED_SIZE)
+									.addPreferredGap(ComponentPlacement.RELATED)
+									.addComponent(Inp_world_Y, GroupLayout.PREFERRED_SIZE, 26, GroupLayout.PREFERRED_SIZE))
+								.addComponent(Inp_sponsors, 0, 0, Short.MAX_VALUE)
+								.addComponent(Inp_iterations)
+								.addComponent(Inp_Agencies, 0, 0, Short.MAX_VALUE)))
+						.addGroup(gl_panel_4.createSequentialGroup()
+							.addPreferredGap(ComponentPlacement.RELATED)
+							.addGroup(gl_panel_4.createParallelGroup(Alignment.LEADING, false)
+								.addComponent(combo_CutdownModel, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+								.addComponent(combo_writeMethod, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+								.addComponent(combo_allocation, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+					.addGap(319))
+		);
 		gl_panel_4.setVerticalGroup(
-				gl_panel_4.createParallelGroup(Alignment.LEADING)
+			gl_panel_4.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_panel_4.createSequentialGroup()
-						.addContainerGap()
-						.addGroup(gl_panel_4.createParallelGroup(Alignment.BASELINE)
-								.addComponent(lblIterations)
-								.addComponent(Inp_iterations, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-						.addGroup(gl_panel_4.createParallelGroup(Alignment.LEADING)
-								.addGroup(gl_panel_4.createSequentialGroup()
-										.addPreferredGap(ComponentPlacement.RELATED)
-										.addComponent(Inp_sponsors, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-								.addGroup(gl_panel_4.createSequentialGroup()
-										.addGap(12)
-										.addComponent(lblSponsors)))
-						.addGroup(gl_panel_4.createParallelGroup(Alignment.LEADING)
-								.addGroup(gl_panel_4.createSequentialGroup()
-										.addPreferredGap(ComponentPlacement.RELATED)
-										.addComponent(Inp_Agencies, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-								.addGroup(gl_panel_4.createSequentialGroup()
-										.addGap(12)
-										.addComponent(lblAgencies)))
-						.addPreferredGap(ComponentPlacement.UNRELATED)
-						.addGroup(gl_panel_4.createParallelGroup(Alignment.BASELINE)
-								.addComponent(lblWorldSize)
-								.addComponent(Inp_world_X, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-								.addComponent(Inp_world_Y, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-						.addPreferredGap(ComponentPlacement.UNRELATED)
-						.addGroup(gl_panel_4.createParallelGroup(Alignment.BASELINE)
-								.addComponent(lblCutDownModel)
-								.addComponent(combo_CutdownModel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-						.addPreferredGap(ComponentPlacement.UNRELATED)
-						.addGroup(gl_panel_4.createParallelGroup(Alignment.BASELINE)
-								.addComponent(lblWriteMethod)
-								.addComponent(combo_writeMethod, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-						.addContainerGap(18, Short.MAX_VALUE))
-				);
+					.addContainerGap()
+					.addGroup(gl_panel_4.createParallelGroup(Alignment.BASELINE)
+						.addComponent(lblIterations)
+						.addComponent(Inp_iterations, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+					.addGroup(gl_panel_4.createParallelGroup(Alignment.LEADING)
+						.addGroup(gl_panel_4.createSequentialGroup()
+							.addPreferredGap(ComponentPlacement.RELATED)
+							.addComponent(Inp_sponsors, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+						.addGroup(gl_panel_4.createSequentialGroup()
+							.addGap(12)
+							.addComponent(lblSponsors)))
+					.addGroup(gl_panel_4.createParallelGroup(Alignment.LEADING)
+						.addGroup(gl_panel_4.createSequentialGroup()
+							.addPreferredGap(ComponentPlacement.RELATED)
+							.addComponent(Inp_Agencies, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+						.addGroup(gl_panel_4.createSequentialGroup()
+							.addGap(12)
+							.addComponent(lblAgencies)))
+					.addPreferredGap(ComponentPlacement.UNRELATED)
+					.addGroup(gl_panel_4.createParallelGroup(Alignment.BASELINE)
+						.addComponent(lblWorldSize)
+						.addComponent(Inp_world_X, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+						.addComponent(Inp_world_Y, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+					.addPreferredGap(ComponentPlacement.UNRELATED)
+					.addGroup(gl_panel_4.createParallelGroup(Alignment.BASELINE)
+						.addComponent(lblCutDownModel)
+						.addComponent(combo_CutdownModel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+					.addPreferredGap(ComponentPlacement.UNRELATED)
+					.addGroup(gl_panel_4.createParallelGroup(Alignment.BASELINE)
+						.addComponent(lblWriteMethod)
+						.addComponent(combo_writeMethod, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+					.addPreferredGap(ComponentPlacement.UNRELATED)
+					.addGroup(gl_panel_4.createParallelGroup(Alignment.BASELINE)
+						.addComponent(combo_allocation, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+						.addComponent(lblAllocation))
+					.addContainerGap(50, Short.MAX_VALUE))
+		);
 		panel_4.setLayout(gl_panel_4);
 
 		JLabel lblSponsorMoney = new JLabel("Sponsor money");
@@ -355,31 +370,40 @@ public class WorldGUIMain {
 		Inp_sponsor_Sigma.setColumns(10);
 
 		JLabel lblSigma = new JLabel("Sigma");
+		
+		chckbxSponsorMoney = new JCheckBox("Respect Sponsor Money");
 		GroupLayout gl_panel_3 = new GroupLayout(panel_3);
 		gl_panel_3.setHorizontalGroup(
-				gl_panel_3.createParallelGroup(Alignment.LEADING)
+			gl_panel_3.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_panel_3.createSequentialGroup()
-						.addContainerGap()
-						.addComponent(lblSponsorMoney)
-						.addGap(10)
-						.addComponent(Inp_sponsor_money, GroupLayout.PREFERRED_SIZE, 59, GroupLayout.PREFERRED_SIZE)
-						.addPreferredGap(ComponentPlacement.RELATED, 28, Short.MAX_VALUE)
-						.addComponent(lblSigma)
-						.addPreferredGap(ComponentPlacement.UNRELATED)
-						.addComponent(Inp_sponsor_Sigma, GroupLayout.PREFERRED_SIZE, 39, GroupLayout.PREFERRED_SIZE)
-						.addGap(27))
-				);
+					.addContainerGap()
+					.addGroup(gl_panel_3.createParallelGroup(Alignment.LEADING)
+						.addGroup(gl_panel_3.createSequentialGroup()
+							.addComponent(lblSponsorMoney)
+							.addGap(10)
+							.addComponent(Inp_sponsor_money, GroupLayout.PREFERRED_SIZE, 59, GroupLayout.PREFERRED_SIZE)
+							.addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+							.addComponent(lblSigma)
+							.addPreferredGap(ComponentPlacement.UNRELATED)
+							.addComponent(Inp_sponsor_Sigma, GroupLayout.PREFERRED_SIZE, 39, GroupLayout.PREFERRED_SIZE)
+							.addGap(27))
+						.addGroup(gl_panel_3.createSequentialGroup()
+							.addComponent(chckbxSponsorMoney)
+							.addContainerGap(172, Short.MAX_VALUE))))
+		);
 		gl_panel_3.setVerticalGroup(
-				gl_panel_3.createParallelGroup(Alignment.LEADING)
+			gl_panel_3.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_panel_3.createSequentialGroup()
-						.addContainerGap()
-						.addGroup(gl_panel_3.createParallelGroup(Alignment.BASELINE)
-								.addComponent(Inp_sponsor_money, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-								.addComponent(lblSponsorMoney)
-								.addComponent(Inp_sponsor_Sigma, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-								.addComponent(lblSigma))
-						.addContainerGap(31, Short.MAX_VALUE))
-				);
+					.addContainerGap()
+					.addGroup(gl_panel_3.createParallelGroup(Alignment.BASELINE)
+						.addComponent(Inp_sponsor_money, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+						.addComponent(lblSponsorMoney)
+						.addComponent(Inp_sponsor_Sigma, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+						.addComponent(lblSigma))
+					.addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(chckbxSponsorMoney)
+					.addContainerGap())
+		);
 		panel_3.setLayout(gl_panel_3);
 		panel_2.setLayout(new MigLayout("", "[59px][59px][59px][59px][59px][59px]", "[16px][16px][16px][16px][16px][16px]"));
 
@@ -526,12 +550,12 @@ public class WorldGUIMain {
 		int numberOfIterations			= 30;
 		int initialNumberOfSponsors 	= 50;
 		int initialNumberOfAgencies 	= 100;
-		// CutDownModel cm 				= CutDownModel.SAME_PERCENTAGE_RATE;
-		CutDownModel cm 				= CutDownModel.PROBABILITY_CALCULATION;
-		AllocationMethod am				= AllocationMethod.CLOSEST_DISTANCE;
+		CutDownModel cutDownModel		= CutDownModel.PROBABILITY_CALCULATION;
+		AllocationMethod allocationMethod= AllocationMethod.CLOSEST_DISTANCE;
 		int[] ws 						= {5,5};
 		double sponsorSigmaFactor 		= 8; 
 		double sponsorMoney 			= 50;
+		boolean respectSponsorMoney		= false;
 		double agencyMoney 				= 10 ;
 		int agencyMoneyReserveFactor 	= 5;
 		double agencySigmaFactor 		= 1;
@@ -562,12 +586,13 @@ public class WorldGUIMain {
 			numberOfIterations			= Integer.parseInt(Inp_iterations.getText());
 			initialNumberOfSponsors 	= Integer.parseInt(Inp_sponsors.getText());
 			initialNumberOfAgencies 	= Integer.parseInt(Inp_Agencies.getText());
-			cm 							= (CutDownModel)combo_CutdownModel.getSelectedItem();
+			cutDownModel				= (CutDownModel)combo_CutdownModel.getSelectedItem();
 			writeMethod					= (WriteMethod)combo_writeMethod.getSelectedItem();
 			ws[0] 						= Integer.parseInt(Inp_world_X.getText());
 			ws[1] 						= Integer.parseInt(Inp_world_Y.getText());
 			sponsorSigmaFactor 			= Double.parseDouble(Inp_sponsor_Sigma.getText()); 
 			sponsorMoney 				= Double.parseDouble(Inp_sponsor_money.getText());
+			respectSponsorMoney			= chckbxSponsorMoney.isSelected();
 			agencyMoney 				= Double.parseDouble(Inp_agencyMoney.getText()) ;
 			agencyMoneyReserveFactor 	= Integer.parseInt(Inp_reserveFactor.getText());
 			agencySigmaFactor 			= Double.parseDouble(Inp_agencySigma.getText());
@@ -577,7 +602,7 @@ public class WorldGUIMain {
 			moveMethod					= (MoveMethod)combo_moveMethod.getSelectedItem();
 			budgetIncrease				= Double.parseDouble(Inp_budgetIncrease.getText());
 			baseRisk					= Double.parseDouble(Inp_baseRisk.getText());
-			//TODO add allocation method am							= 
+			allocationMethod			= (AllocationMethod)combo_allocation.getSelectedItem(); 
 
 
 			listen = new What();
@@ -600,6 +625,12 @@ public class WorldGUIMain {
 		protected void done(){
 			// this is the final operation invoked, when the threaded execution completes. This is normally where all the results are gathered and exposed for the user.
 			// for future enhancements, this could very well be the place to output some more thorough statistics regarding a given simulation. (how many agencies were created, how many were cut in average per iteration etc. etc.)
+			try {get(); // constructs an execution exception, if any error comes up.
+			// handle with care as this operation blocks the GUI, but it is convenient in the done() method as it will catch errors asynchronously, which I need for this particular world simulation.
+			}
+			catch(ExecutionException | InterruptedException e){
+				infoBox(e.getCause().getMessage(),"Validation error");}
+			
 			btnRunSimulation.setEnabled(true);
 			textArea.append("ID:      " + world.getWorldID() + "\n");
 			textArea.append("Created: " + world.getCreationDate() + "\n");
@@ -618,9 +649,9 @@ public class WorldGUIMain {
 		World world;
 		protected Integer doInBackground() throws Exception{
 			world = new World(numberOfIterations, initialNumberOfSponsors,initialNumberOfAgencies, 
-					cm, ws,sponsorSigmaFactor, sponsorMoney, agencyMoney,agencyMoneyReserveFactor,
+					cutDownModel, ws,sponsorSigmaFactor, sponsorMoney,respectSponsorMoney, agencyMoney,agencyMoneyReserveFactor,
 					agencySigmaFactor,agencyRequirementNeed,
-					agencyRequirementSigma,sightOfAgency, writeMethod, am,moveRate,moveMethod,
+					agencyRequirementSigma,sightOfAgency, writeMethod, allocationMethod,moveRate,moveMethod,
 					budgetIncrease,baseRisk,settings);
 			world.addListener(listen);
 			world.orchestrateWorld();
@@ -688,6 +719,13 @@ public class WorldGUIMain {
 			Inp_budgetIncrease.setText(world.getBudgetIncrease()+"");
 			Inp_baseRisk.setText(world.getBaseRisk()+"");
 		}
-		catch(SQLException e){e.printStackTrace();}
+		catch(SQLException e){
+		infoBox (e.getLocalizedMessage(),"Reading world id error");}
 	} // readWorld
+	
+
+	    public static void infoBox(String infoMessage, String titleBar)
+	    {
+	        JOptionPane.showMessageDialog(null, infoMessage, "InfoBox: " + titleBar, JOptionPane.INFORMATION_MESSAGE);
+	    }
 }

@@ -40,8 +40,17 @@ public class WriterSQL extends SponsorsAndAgenciesWriter{
 	private final String WORLD_INSERT = "INSERT INTO sponsors_agencies.worlds(worldID,creationDate,initialNumberOfSponsors,"+
 			"initialNumberOfAgencies,cutDownModel,allocationMethod,worldSize,sponsorSigmaFactor,sponsorMoney,agencyMoney," +
 			"agencyMoneyReserveFactor,agencySigmaFactor,agencyRequirementNeed,agencyRequirementSigma,sightOfAgency," + 
-			"moveRate,numberOfIterations,baserisk)" +
-			"VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+			"moveRate,numberOfIterations,baserisk, moveMethod)" +
+			"VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+	private final String STAT_UPDATE = "UPDATE sponsors_agencies.worlds " + 
+			                           "set StatMean = ? ," + 
+			                           "StatLCV = ?,      " + 
+			                           "StatSkewness = ?, " + 
+			                           "StatKurtosis = ?, " + 
+			                           "StatLLCV = ? ,    " + 
+			                           "StatLSkewness = ?," + 
+			                           "StatLKurtosis = ? " + 
+			                           "WHERE worldID = ?";
 	private String ConnURL; 
 	private boolean sponsorWritten = false;
 	private int lastAgencyWritten = -1;
@@ -50,13 +59,27 @@ public class WriterSQL extends SponsorsAndAgenciesWriter{
 	PreparedStatement stmt2 = null;
 	//ResultSet rs = null; Used for retrieving data or generated keys
 
-
-	public void setup(){
-	}
-
 	@Override
-	public void writeStatistics(World world, Statistics statistics){
-
+	public void writeStatistics(World world){
+		try{
+			connect(world);
+			stmt = conn.prepareStatement(STAT_UPDATE);
+			stmt.setDouble(1, world.getMean());
+			stmt.setDouble(2, world.getLcv());
+			stmt.setDouble(3, world.getSkewness());
+			stmt.setDouble(4, world.getKurtosis());
+			stmt.setDouble(5, world.getL_lcv());
+			stmt.setDouble(6, world.getL_skewness());
+			stmt.setDouble(7, world.getL_kurtosis());
+			stmt.setString(8, world.getWorldID());
+			stmt.executeUpdate();	// the SQL is fired 
+			conn.commit();     // the data is committed. 
+		}
+		catch(Exception e){}
+		finally{
+			if (conn != null)
+				closeConnection();
+				}
 	} // writeStatistics
 
 	@Override
@@ -71,11 +94,7 @@ public class WriterSQL extends SponsorsAndAgenciesWriter{
 		catch(Exception e){}
 		finally{
 			if (conn != null)
-				try{
-					conn.close();
-
-				}
-			catch(SQLException sqlex){};
+				closeConnection();
 		}
 	} // writeData
 
@@ -128,6 +147,7 @@ public class WriterSQL extends SponsorsAndAgenciesWriter{
 			stmt.setDouble	(16, world.getMoveRate());
 			stmt.setInt		(17, world.getNumberOfIterations());
 			stmt.setDouble	(18, world.getBaseRisk());
+			stmt.setString(19, world.getMoveMethod().name());
 			stmt.execute();	// the SQL is fired 
 			conn.commit();     // the data is committed. 
 

@@ -12,7 +12,7 @@ public enum MoveMethod {
 	}
 	public static MoveMethod convert (String string) {
 		for (MoveMethod cm : MoveMethod.values())
-			if( cm.toString().equals(string) ) {
+			if( cm == MoveMethod.valueOf(string))  {
 				return cm;
 			}
 		return null;

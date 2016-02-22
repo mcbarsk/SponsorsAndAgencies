@@ -21,10 +21,12 @@ public class Agency implements Cloneable{
 	private double		budgetIncrease = 1; // factor for budget increase per iteration
 	private int 		loyalty = 0; // amount of times the same sponsor has been allocated.
 	private String		status = "";
+	private double 		distanceTraveled = 0; // used for picking agencies to be cut.
+	private int			uncutCount = 0; // How many times did the agency get full payout based on budget?
 
 	public Agency(Utilities util, String worldID, Timestamp creationDate, int name, int width, int height, 
-				  double mu, double sigma, double eyesight, double moneyReserveFactor,
-				  double budgetIncrease, double risk){
+			double mu, double sigma, double eyesight, double moneyReserveFactor,
+			double budgetIncrease, double risk){
 		this.worldID 			= worldID;
 		this.creationDate		= creationDate;
 		this.name 				= name;
@@ -67,6 +69,9 @@ public class Agency implements Cloneable{
 	public int getLoyalty()			{return loyalty;}
 	public double[] getPosition()	{return position;}
 	public String getStatus()		{return status;}
+	public double getDistTraveled() {return distanceTraveled;}
+	public int getUncutCount()		{return uncutCount;}
+
 
 	public final void addSponsor(Sponsor sponsor){
 		possibleSponsors.add(sponsor);
@@ -91,7 +96,7 @@ public class Agency implements Cloneable{
 			result = util.gaussian(mu, sigma);
 		moneyNeeded = result;
 	}
-	
+
 	public void setNewBudget(Utilities util, double mu, double sigma){
 		double result = -1;
 		while (result<0)
@@ -105,6 +110,10 @@ public class Agency implements Cloneable{
 
 	public void setPayout(double payout){
 		this.payout = payout;
+		if (Double.compare(payout, budget) == 0)
+			uncutCount += 1;
+		else
+			uncutCount = 0;
 	}
 
 	public void setRisk(double risk){
@@ -114,17 +123,23 @@ public class Agency implements Cloneable{
 	public boolean noSponsors(){
 		return chosenSponsor == null; 
 	}
-			
+
 
 	public void setSponsor(Sponsor sponsor){
-		if(sponsor.equals(chosenSponsor)){
-			loyalty += loyalty;
+		String s; 
+		if(sponsor != null && sponsor.equals(chosenSponsor)){
+			loyalty += 1;
 			status = status + "same sponsor,";
 		}
 		else{
-		this.chosenSponsor = sponsor;
-		status = status + "new sponsor:" + sponsor.getName() + ",";
-		loyalty = 1;
+			if (sponsor == null) 
+				s = "none";
+			else
+				s = sponsor.getName() + ""; // implicit conversion from int to string
+
+			this.chosenSponsor = sponsor;
+			status = status + "new sponsor:" + s + ",";
+			loyalty = 1;
 		}
 	}
 
@@ -132,6 +147,10 @@ public class Agency implements Cloneable{
 		position[0] = width;
 		position[1] = height;
 		status = status + "moved,";
+	}
+
+	public void setDistanceTraveled(double dist){
+		distanceTraveled = dist;
 	}
 
 	public void setCutDown(boolean bool){
@@ -149,7 +168,7 @@ public class Agency implements Cloneable{
 	public void newBudget(){
 		budget = budget * budgetIncrease;
 	}
-	
+
 	public void clearStatus(){
 		status = "";
 	}
