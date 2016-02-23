@@ -97,11 +97,11 @@ public class Agency implements Cloneable{
 		moneyNeeded = result;
 	}
 
-	public void setNewBudget(Utilities util, double mu, double sigma){
+	public void setNewBudget(Utilities util, double mu, double sigma, int actualIteration){
 		double result = -1;
 		while (result<0)
 			result = this.budget *util.gaussian(mu, sigma);
-		this.budget = result;
+		this.budget = result * Math.pow(budgetIncrease, (double) actualIteration);
 	}
 
 	public void clearSavingsDifference(){
@@ -165,9 +165,6 @@ public class Agency implements Cloneable{
 		return savings > 0;
 	}
 
-	public void newBudget(){
-		budget = budget * budgetIncrease;
-	}
 
 	public void clearStatus(){
 		status = "";

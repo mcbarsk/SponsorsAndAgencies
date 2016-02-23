@@ -205,7 +205,7 @@ public class World {
 
 	
 	private void initialise(){	// Step 1
-		setstart();
+		//setstart();
 		// Create Sponsors
 		for (int i = 0; i<initialNumberOfSponsors;i++ ){
 			LSponsors.add(new Sponsor(sponsorUtilities, worldID, creationDate,i,worldSize[0],worldSize[1],sponsorMoney,sponsorMoney/sponsorSigmaFactor));
@@ -224,8 +224,8 @@ public class World {
 		else{
 			totalNumberOfAgencies = generateNewAgencies();
 		}
-		setend(); 
-		log (start, end, "initialise");
+		//setend(); 
+		//log (start, end, "initialise");
 	}; // initialise
 
 	private void setstart(){ start = System.currentTimeMillis();}
@@ -246,7 +246,7 @@ public class World {
 	}; // distance	
 
 	private void seekPotentialSponsors(){ // Step 2
-		setstart();
+		//setstart();
 		for (int i=0; i<LAgencies.size();i++){
 			Agency agency = LAgencies.get(i);
 			agency.getPossibleSponsors().clear(); // start all over with new potential sponsors
@@ -257,12 +257,12 @@ public class World {
 					agency.addSponsor(sponsor);
 			}
 		}
-		setend();
-		log (start, end, "step2");
+		//setend();
+		//log (start, end, "step2");
 	} // seekPotentialSponsors
 
 	private void allocateSponsor(){ // Step 3
-		 setstart();
+		 //setstart();
 		for (int i=0;i<LAgencies.size();i++){
 			Agency agency = LAgencies.get(i);
 			Sponsor sponsor = Allocate.allocateAgencies(allocationMethod, agency, respectSponsorMoney);			
@@ -273,20 +273,20 @@ public class World {
 			if (sponsor != null) // avoid null pointer error. It is potentially possible that a sponsor hasn't been found.
 				sponsor.addAgency(agency);
 		}
-		setend();
-		log(start,end,"step3");
+		//setend();
+		//log(start,end,"step3");
 	} // allocateSponsor
 
 	private void allocateFunding(){ // Step 4
-		setstart();
+		//setstart();
 		resetCutDown();                           // initialises each agency cutdown variable. 
 		// When this method terminates all relevant agencies will express whether they have been cut via the payout algorithms. 
 		for (int i=0; i < LSponsors.size();i++){
 			Sponsor sponsor = LSponsors.get(i);
 			Payout.payout(cutDownModel, sponsor, baseRisk); // private class handles the different payout models, based on the cutDownModel
 		}
-		setend();
-		log (start, end, "step4");
+		//setend();
+		//log (start, end, "step4");
 	} // allocateFunding
 
 	private void spendBudget(){ // Step 5
@@ -330,11 +330,11 @@ public class World {
 			totalAgencyRequirement += LAgencies.get(i).getBudget();
 		}
 		double avgBudget = 0;
-		if (initialNumberOfAgencies == 0){
+		if (initialNumberOfAgencies == 0 || LAgencies.isEmpty()){
 			avgBudget = this.agencyMoney;
 		}
 		else
-			avgBudget = totalAgencyRequirement/LAgencies.size();
+			avgBudget = totalAgencyRequirement/LAgencies.size(); // If all agencies are dead, start all over, otherwise use size to calculate requirement.
 		int newAgencies = (int)((totalSponsorMoney - totalAgencyRequirement) / avgBudget); // the cast to int rounds automatically.
 		newAgencies = (int)sponsorUtilities.gaussian(newAgencies, newAgencies * 0.02); // this gaussian pseudo-random is not REALLY necessary but leaves a bit of probability in relation to how many new agencies to create.
 		for (i=1;i<newAgencies;i++){
@@ -357,7 +357,7 @@ public class World {
 		final double SIGMA = 0.02;
 		for (int i=0;i< LAgencies.size();i++){
 			Agency agency = LAgencies.get(i);
-			agency.setNewBudget(agencyUtilities, MU,SIGMA); // completely new budget or increase as per rate?
+			agency.setNewBudget(agencyUtilities, MU,SIGMA, actualIteration); // completely new budget or increase as per rate?
 			agency.setMoneyNeeded(agencyUtilities, agency.getBudget() * agencyRequirementNeed, agency.getBudget() * agencyRequirementSigma);
 		}
 	} // setBudgetRequirements
@@ -561,7 +561,7 @@ public class World {
 				foundSponsor = loyaltySponsor(agency);
 				break;
 			case RANDOM_SPONSOR :
-				foundSponsor = randomSponsor(agency);
+				foundSponsor = randomSponsor(agency, respectSponsorMoney);
 				break;
 			case SURVIVAL_MODE :
 				foundSponsor = survivalMode(agency, respectSponsorMoney);
@@ -586,24 +586,24 @@ public class World {
 		private static Sponsor loyaltySponsor(Agency agency){
 			// this routine calculates a simple weighted random based upon loyalty. 
 			// it sets up an array where it percentage wise per sponsor adds to a double until the value 1 is reached. 
-			// loyalty is part of this so if the agency has had the same sponsor for three rounds and there are 4 potential sponsors, the array would be set up like this:
-			// [0] = 0..3/6  ----> 6 = number of sponsors + loyalty count - 1
-			// [1] = 3/6..4/6
-			// [2] = 4/6..5/6
-			// [3] = 5/6..6/6
-			// this means if a sponsor has been allocated for several rounds, the probability for choosing this sponsor again is increased. (in this example the chance is 50%)
+			// loyalty is part of this so if the agency has had the same sponsor for three rounds and there are 4 potential sponsors, the array would be set up with these ranges, for the random() to hit:
+			// [0] = [0/7..4/7[  ----> 7 = The denominator becomes: number of sponsors + loyalty count for a given sponsor. The numerator is then loyalty count + 1
+			// [1] = [4/7..5/7[
+			// [2] = [5/7..6/7[
+			// [3] = [6/7..7/7[
+			// this means if a sponsor has been allocated for several rounds, the probability for choosing this sponsor again is increased. (in this example the chance is >50%)
+			// NB, the algorithm is actually only populating the upper value for the random to make a hit, and the iterator will then stop, if it hits a value, where the random is less than the upper range: 
+			// like this: random = 0.45, Array = [4/7, 5/7, 6/7, 7/7]. Now iterating through the values in the array, the algorithm stops, when the value is larger than 0.45, which in this case is a hit for the first sponsor.
 			int size = agency.getPossibleSponsors().size();
 			double[] probabilityArray = new double[size];
 			int denominator = size + agency.getLoyalty(); // the agency has been allocated for - maybe - several rounds
-			double tmpResult = 0;
 			int numerator = 0;
-			double random = Math.random();
+			double random = Math.random();  // the decision is taken!
 			int resultIndex = 0;
 			boolean found = false;
-			double factor;
 			for (int i = 1; i <= size ; i++) { // the array is set up
 				if (agency.getSponsor() != null && agency.getSponsor().equals(agency.getPossibleSponsors().get(i-1)))
-					numerator = numerator + agency.getLoyalty();
+					numerator += (agency.getLoyalty()+1);
 				else	
 					numerator += 1;
 				probabilityArray[i-1] = ((double)numerator / (double)denominator);
@@ -621,17 +621,30 @@ public class World {
 		} // loyaltySponsor
 
 		
-		private static Sponsor randomSponsor(Agency agency){
-			// picks a completely random sponsor as long as it is within eyesight.
+		private static Sponsor randomSponsor(Agency agency, boolean respectSponsorMoney){
+			// picks a completely random sponsor as long as it is within eyesight. If respectSponsorMoney is set, it will only allocate a sponsor with sufficient funding available.
 			Sponsor sponsor = null;
-			int size = agency.getPossibleSponsors().size();
-			if (size > 0) {
-				int sponsorIndex = (int) (Math.random() * size); 
-				sponsor = agency.getPossibleSponsors().get(sponsorIndex);
-				agency.setSponsor(sponsor);
-				sponsor.addAgency(agency);}
-			else agency.setSponsor(null);
-			return sponsor;
+			@SuppressWarnings({"unchecked"}) // I know the list will only contain sponsors, hence the suppression of this warning (it claims, the cast to sponsor is unchecked, which is "correct" but controlled.) 
+			ArrayList<Sponsor> localList = (ArrayList<Sponsor>) agency.getPossibleSponsors().clone(); // creates a shallow copy of the original list, with content.
+			int size = localList.size();
+			boolean found = false;
+			while (!found && size > 0){
+					int sponsorIndex = (int) (Math.random() * size); 
+					sponsor = localList.get(sponsorIndex);
+					if (sponsor.getMoney() > calculatePayoff(sponsor, agency, respectSponsorMoney)){
+						found = true; // sponsor is found and the while loop can terminate.
+						agency.setSponsor(sponsor);
+						sponsor.addAgency(agency);
+					}
+					else{
+						localList.remove(sponsorIndex); // not found, so the candidate is removed from local list
+						size -= 1; // and the number of candidates are decreased.
+					}
+				}
+			if (!found) 
+				return null;
+			else
+				return sponsor;
 		} // randomSponsor
 
 		
@@ -721,7 +734,7 @@ public class World {
 				for (int i=0;i<sponsor.getAgencies().size();i++){
 					Agency agencylocal;
 					agencylocal = sponsor.getAgencies().get(i);
-					if (agency == null || agency != agencylocal) // avoid adding input agency budget.
+					if (agency == null || !agency.equals(agencylocal)) // avoid adding input agency budget.
 						returnValue += agencylocal.getBudget();
 				}
 			}
