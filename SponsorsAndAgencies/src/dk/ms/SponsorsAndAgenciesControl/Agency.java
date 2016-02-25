@@ -20,7 +20,6 @@ public class Agency implements Cloneable{
 	private double		savingsdifference = 0; // difference in percentage of the savings, previous round vs this round. This is the basis for the statistics calculation.
 	private double		budgetIncrease = 1; // factor for budget increase per iteration
 	private int 		loyalty = 0; // amount of times the same sponsor has been allocated.
-	private String		status = "";
 	private double 		distanceTraveled = 0; // used for picking agencies to be cut.
 	private int			uncutCount = 0; // How many times did the agency get full payout based on budget?
 
@@ -68,7 +67,6 @@ public class Agency implements Cloneable{
 	public double getSavingsdiff()	{return savingsdifference;}
 	public int getLoyalty()			{return loyalty;}
 	public double[] getPosition()	{return position;}
-	public String getStatus()		{return status;}
 	public double getDistTraveled() {return distanceTraveled;}
 	public int getUncutCount()		{return uncutCount;}
 
@@ -126,19 +124,11 @@ public class Agency implements Cloneable{
 
 
 	public void setSponsor(Sponsor sponsor){
-		String s; 
 		if(sponsor != null && sponsor.equals(chosenSponsor)){
 			loyalty += 1;
-			status = status + "same sponsor,";
 		}
 		else{
-			if (sponsor == null) 
-				s = "none";
-			else
-				s = sponsor.getName() + ""; // implicit conversion from int to string
-
 			this.chosenSponsor = sponsor;
-			status = status + "new sponsor:" + s + ",";
 			loyalty = 1;
 		}
 	}
@@ -146,7 +136,6 @@ public class Agency implements Cloneable{
 	public void setPosition(double width, double height){
 		position[0] = width;
 		position[1] = height;
-		status = status + "moved,";
 	}
 
 	public void setDistanceTraveled(double dist){
@@ -163,11 +152,6 @@ public class Agency implements Cloneable{
 
 	public boolean hasMoneyLeft(){
 		return savings > 0;
-	}
-
-
-	public void clearStatus(){
-		status = "";
 	}
 
 

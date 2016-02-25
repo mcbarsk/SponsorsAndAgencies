@@ -41,6 +41,10 @@ import java.awt.SystemColor;
 import javax.swing.UIManager;
 import net.miginfocom.swing.MigLayout;
 import javax.swing.JCheckBox;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.Point;
+import java.awt.event.KeyEvent;
 
 public class WorldGUIMain {
 
@@ -64,16 +68,19 @@ public class WorldGUIMain {
 	private JComboBox<CutDownModel> combo_CutdownModel;
 	private JComboBox<WriteMethod> combo_writeMethod;
 	private JComboBox<MoveMethod> combo_moveMethod;
-	private JComboBox<String> combo_WorldID;
+	private JComboBox<WorldIDType> combo_WorldID;
 	private JComboBox<AllocationMethod> combo_allocation;
 	private JCheckBox chckbxSponsorMoney;
 
 	private JButton btnRunSimulation;
 	private Settings settings;
 	JTextArea textArea;
-	ArrayList<String> worldIDList;
+	ArrayList<WorldIDType> worldIDList;
 	private JTextField Inp_baseRisk;
 	private boolean combo_worldIDActionAllowed = false;
+	private JTextField Inp_b0;
+	private JTextField Inp_b1;
+	private JTextField Inp_worldname;
 
 	/**
 	 * Launch the application.
@@ -106,7 +113,8 @@ public class WorldGUIMain {
 	private void initialize() {
 		settings = new Settings();
 		frame = new JFrame();
-		frame.setBounds(100, 100, 1018, 787);
+		frame.getContentPane().setLocation(new Point(1, 1));
+		frame.setBounds(1, 1, 1018, 787);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(new BoxLayout(frame.getContentPane(), BoxLayout.X_AXIS));
 
@@ -118,11 +126,19 @@ public class WorldGUIMain {
 
 		JLabel lblWorldId = new JLabel("World ID");
 
-		combo_WorldID = new JComboBox<String>();
+		combo_WorldID = new JComboBox<WorldIDType>();
+		combo_WorldID.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusGained(FocusEvent arg0) {
+				if (combo_WorldID.getItemCount() == 0){
+					readWorldIDs();
+				}
+			}
+		});
 		combo_WorldID.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				if (combo_worldIDActionAllowed)
-					readWorld(combo_WorldID.getSelectedItem().toString());
+					readWorld((WorldIDType)combo_WorldID.getSelectedItem());
 			}
 		});
 		combo_WorldID.setBackground(new Color(250, 250, 210));
@@ -143,6 +159,7 @@ public class WorldGUIMain {
 		JLabel lblProgress = new JLabel("Progress");
 
 		btnRunSimulation = new JButton("Run simulation");
+		btnRunSimulation.setMnemonic(KeyEvent.VK_ENTER);
 		btnRunSimulation.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				worker wrk = new worker();
@@ -276,46 +293,59 @@ public class WorldGUIMain {
 		JLabel lblWriteMethod = new JLabel("Write method");
 
 		combo_writeMethod = new JComboBox<WriteMethod>();
+		combo_writeMethod.setToolTipText("<html><p width=\\\"200\\\"> \r\nSpecify whether to write a specific set of data to a file, <BR\\>  \r\nall data to the database<BR\\>\r\nor just simulate run by not writing data.</p></html>\r\n");
 		combo_writeMethod.setBackground(new Color(250, 250, 210));
 		combo_writeMethod.setAlignmentX(Component.LEFT_ALIGNMENT);
 		combo_writeMethod.setAlignmentY(Component.TOP_ALIGNMENT);
 		combo_writeMethod.setModel(new DefaultComboBoxModel<WriteMethod>(WriteMethod.values()));
 		
 		combo_allocation = new JComboBox<AllocationMethod>();
+		combo_allocation.setBackground(new Color(250, 250, 210));
 		combo_allocation.setModel(new DefaultComboBoxModel<AllocationMethod>(AllocationMethod.values()));
 		
 		JLabel lblAllocation = new JLabel("Allocation");
+		
+		JLabel lblName = new JLabel("Name");
+		
+		Inp_worldname = new JTextField();
+		Inp_worldname.setColumns(10);
 		GroupLayout gl_panel_4 = new GroupLayout(panel_4);
 		gl_panel_4.setHorizontalGroup(
 			gl_panel_4.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_panel_4.createSequentialGroup()
 					.addContainerGap()
-					.addGroup(gl_panel_4.createParallelGroup(Alignment.LEADING)
-						.addComponent(lblIterations)
-						.addComponent(lblSponsors)
-						.addComponent(lblAgencies)
-						.addComponent(lblWorldSize)
-						.addComponent(lblCutDownModel)
-						.addComponent(lblWriteMethod)
-						.addComponent(lblAllocation))
-					.addGroup(gl_panel_4.createParallelGroup(Alignment.LEADING)
+					.addGroup(gl_panel_4.createParallelGroup(Alignment.LEADING, false)
 						.addGroup(gl_panel_4.createSequentialGroup()
-							.addGap(9)
-							.addGroup(gl_panel_4.createParallelGroup(Alignment.LEADING, false)
+							.addGroup(gl_panel_4.createParallelGroup(Alignment.LEADING)
+								.addComponent(lblIterations)
+								.addComponent(lblSponsors)
+								.addComponent(lblAgencies)
+								.addComponent(lblWorldSize)
+								.addComponent(lblCutDownModel)
+								.addComponent(lblWriteMethod)
+								.addComponent(lblAllocation))
+							.addGroup(gl_panel_4.createParallelGroup(Alignment.LEADING)
 								.addGroup(gl_panel_4.createSequentialGroup()
-									.addComponent(Inp_world_X, GroupLayout.PREFERRED_SIZE, 27, GroupLayout.PREFERRED_SIZE)
+									.addGap(9)
+									.addGroup(gl_panel_4.createParallelGroup(Alignment.LEADING, false)
+										.addGroup(gl_panel_4.createSequentialGroup()
+											.addComponent(Inp_world_X, GroupLayout.PREFERRED_SIZE, 27, GroupLayout.PREFERRED_SIZE)
+											.addPreferredGap(ComponentPlacement.RELATED)
+											.addComponent(Inp_world_Y, GroupLayout.PREFERRED_SIZE, 26, GroupLayout.PREFERRED_SIZE))
+										.addComponent(Inp_sponsors, 0, 0, Short.MAX_VALUE)
+										.addComponent(Inp_iterations)
+										.addComponent(Inp_Agencies, 0, 0, Short.MAX_VALUE)))
+								.addGroup(gl_panel_4.createSequentialGroup()
 									.addPreferredGap(ComponentPlacement.RELATED)
-									.addComponent(Inp_world_Y, GroupLayout.PREFERRED_SIZE, 26, GroupLayout.PREFERRED_SIZE))
-								.addComponent(Inp_sponsors, 0, 0, Short.MAX_VALUE)
-								.addComponent(Inp_iterations)
-								.addComponent(Inp_Agencies, 0, 0, Short.MAX_VALUE)))
+									.addGroup(gl_panel_4.createParallelGroup(Alignment.LEADING, false)
+										.addComponent(combo_CutdownModel, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+										.addComponent(combo_writeMethod, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+										.addComponent(combo_allocation, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))))
 						.addGroup(gl_panel_4.createSequentialGroup()
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addGroup(gl_panel_4.createParallelGroup(Alignment.LEADING, false)
-								.addComponent(combo_CutdownModel, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-								.addComponent(combo_writeMethod, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-								.addComponent(combo_allocation, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
-					.addGap(319))
+							.addComponent(lblName)
+							.addGap(18)
+							.addComponent(Inp_worldname)))
+					.addContainerGap(113, Short.MAX_VALUE))
 		);
 		gl_panel_4.setVerticalGroup(
 			gl_panel_4.createParallelGroup(Alignment.LEADING)
@@ -355,7 +385,11 @@ public class WorldGUIMain {
 					.addGroup(gl_panel_4.createParallelGroup(Alignment.BASELINE)
 						.addComponent(combo_allocation, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
 						.addComponent(lblAllocation))
-					.addContainerGap(50, Short.MAX_VALUE))
+					.addPreferredGap(ComponentPlacement.RELATED, 46, Short.MAX_VALUE)
+					.addGroup(gl_panel_4.createParallelGroup(Alignment.BASELINE)
+						.addComponent(lblName)
+						.addComponent(Inp_worldname, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+					.addGap(33))
 		);
 		panel_4.setLayout(gl_panel_4);
 
@@ -405,7 +439,7 @@ public class WorldGUIMain {
 					.addContainerGap())
 		);
 		panel_3.setLayout(gl_panel_3);
-		panel_2.setLayout(new MigLayout("", "[59px][59px][59px][59px][59px][59px]", "[16px][16px][16px][16px][16px][16px]"));
+		panel_2.setLayout(new MigLayout("", "[59px][59px,grow][59px][59px][59px][59px]", "[16px][16px][16px][16px][16px][16px]"));
 
 		JLabel lblAgencyMoney = new JLabel("Agency money");
 		lblAgencyMoney.setAlignmentY(Component.TOP_ALIGNMENT);
@@ -481,6 +515,7 @@ public class WorldGUIMain {
 		panel_2.add(label_8, "cell 2 3,grow");
 
 		combo_moveMethod = new JComboBox<MoveMethod>();
+		combo_moveMethod.setBackground(new Color(250, 250, 210));
 		combo_moveMethod.setModel(new DefaultComboBoxModel<MoveMethod>(MoveMethod.values()));
 		panel_2.add(combo_moveMethod, "cell 3 3,growx");
 		
@@ -510,9 +545,16 @@ public class WorldGUIMain {
 
 		JLabel label_12 = new JLabel("");
 		panel_2.add(label_12, "flowy,cell 5 4,grow");
+		
+		JLabel lblBB = new JLabel("B0 / B1");
+		panel_2.add(lblBB, "cell 0 5,alignx left");
+		
+		Inp_b0 = new JTextField();
+		panel_2.add(Inp_b0, "cell 1 5,growx,aligny bottom");
+		Inp_b0.setColumns(10);
 
 		JLabel label_13 = new JLabel("");
-		panel_2.add(label_13, "cell 2 5,grow");
+		panel_2.add(label_13, "flowy,cell 2 5,grow");
 
 		JLabel label_14 = new JLabel("");
 		panel_2.add(label_14, "flowy,cell 3 5,grow");
@@ -531,22 +573,59 @@ public class WorldGUIMain {
 		Inp_moveRate = new JTextField();
 		Inp_moveRate.setColumns(10);
 		panel_2.add(Inp_moveRate, "cell 4 2,grow");
+		
+		Inp_b1 = new JTextField();
+		panel_2.add(Inp_b1, "cell 2 5");
+		Inp_b1.setColumns(10);
 		panel_1.setLayout(gl_panel_1);
 
 		JMenuBar menuBar = new JMenuBar();
 		frame.setJMenuBar(menuBar);
 
-		JMenu mnNewMenu = new JMenu("New menu");
+		JMenu mnNewMenu = new JMenu("Menu");
+		mnNewMenu.setMnemonic('M');
 		menuBar.add(mnNewMenu);
-
-		JMenuItem mntmNewMenuItem = new JMenuItem("New menu item");
-		mnNewMenu.add(mntmNewMenuItem);
+		
+		JMenu mnAnalysis = new JMenu("Analysis");
+		mnAnalysis.setMnemonic('A');
+		mnNewMenu.add(mnAnalysis);
+		
+				JMenuItem mntmAverageReport = new JMenuItem("1 Average Report");
+				mntmAverageReport.setMnemonic('1');
+				mnAnalysis.add(mntmAverageReport);
+				
+				JMenuItem mntmSponsorReport = new JMenuItem("2 Sponsor Report");
+				mntmSponsorReport.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent arg0) {
+						WorldIDType wt = (WorldIDType)combo_WorldID.getSelectedItem(); // if an item is selected, then the worldID is retrieved.
+						WorldGUISponsorReport wga = new WorldGUISponsorReport(worldIDList, wt);
+						javax.swing.SwingUtilities.invokeLater(new Runnable() {
+							public void run() {
+								wga.createAndShowGUI();
+							}
+						});
+					
+					}
+				});
+				mntmSponsorReport.setMnemonic('2');
+				mnAnalysis.add(mntmSponsorReport);
+				mntmAverageReport.addActionListener(new ActionListener() { // This menu starts the avg report. 
+					public void actionPerformed(ActionEvent arg0) {
+						WorldIDType wt = (WorldIDType)combo_WorldID.getSelectedItem(); // if an item is selected, then the worldID is retrieved.
+						WorldGUIAvgReport wga = new WorldGUIAvgReport(worldIDList, wt);
+						javax.swing.SwingUtilities.invokeLater(new Runnable() {
+							public void run() {
+								wga.createAndShowGUI();
+							}
+						});
+					}
+				});
 		initScreen();   // Sets up default values for the different text fields.
 		readWorldIDs(); // populates the combo box for world IDs by reading data from the database (if connected.)
 	} // initialize
 
 	class worker extends SwingWorker<Integer, String>{
-
+		String worldname				= "";
 		int numberOfIterations			= 30;
 		int initialNumberOfSponsors 	= 50;
 		int initialNumberOfAgencies 	= 100;
@@ -565,8 +644,10 @@ public class WorldGUIMain {
 		boolean pickRandomSponsor 		= false;
 		double moveRate					= 0.5;
 		MoveMethod moveMethod;
-		double budgetIncrease			= 1.02;
+		double budgetIncrease			= 1;
 		double baseRisk					= 0.25;
+		double b0						= 0;
+		double b1						= 0;
 		int stat = 0;
 		What listen;
 		WriteMethod writeMethod = WriteMethod.NONE;
@@ -583,6 +664,7 @@ public class WorldGUIMain {
 		} // Class What
 
 		public worker(){
+			worldname					= Inp_worldname.getText();
 			numberOfIterations			= Integer.parseInt(Inp_iterations.getText());
 			initialNumberOfSponsors 	= Integer.parseInt(Inp_sponsors.getText());
 			initialNumberOfAgencies 	= Integer.parseInt(Inp_Agencies.getText());
@@ -603,6 +685,8 @@ public class WorldGUIMain {
 			budgetIncrease				= Double.parseDouble(Inp_budgetIncrease.getText());
 			baseRisk					= Double.parseDouble(Inp_baseRisk.getText());
 			allocationMethod			= (AllocationMethod)combo_allocation.getSelectedItem(); 
+			b0							= Double.parseDouble(Inp_b0.getText());
+			b1							= Double.parseDouble(Inp_b1.getText());
 
 
 			listen = new What();
@@ -648,11 +732,11 @@ public class WorldGUIMain {
 		} // done
 		World world;
 		protected Integer doInBackground() throws Exception{
-			world = new World(numberOfIterations, initialNumberOfSponsors,initialNumberOfAgencies, 
+			world = new World(worldname,numberOfIterations, initialNumberOfSponsors,initialNumberOfAgencies, 
 					cutDownModel, ws,sponsorSigmaFactor, sponsorMoney,respectSponsorMoney, agencyMoney,agencyMoneyReserveFactor,
 					agencySigmaFactor,agencyRequirementNeed,
 					agencyRequirementSigma,sightOfAgency, writeMethod, allocationMethod,moveRate,moveMethod,
-					budgetIncrease,baseRisk,settings);
+					budgetIncrease,baseRisk,b0, b1,settings);
 			world.addListener(listen);
 			world.orchestrateWorld();
 
@@ -670,17 +754,19 @@ public class WorldGUIMain {
 		combo_writeMethod.setSelectedIndex(0);
 		Inp_world_X.setText("5");
 		Inp_world_Y.setText("5");
-		Inp_sponsor_Sigma.setText("6"); 
-		Inp_sponsor_money.setText("50");
-		Inp_agencyMoney.setText("10") ;
+		Inp_sponsor_Sigma.setText("6.0"); 
+		Inp_sponsor_money.setText("50.0");
+		Inp_agencyMoney.setText("10.0") ;
 		Inp_reserveFactor.setText("5");
 		Inp_agencySigma.setText("6");
 		Inp_requirementNeed.setText("0.92");
 		Inp_requirementSigma.setText("0.2");
 		Inp_eyesight.setText("3");
 		Inp_moveRate.setText("0.5");
-		Inp_budgetIncrease.setText("1.02");
+		Inp_budgetIncrease.setText("1.00");
 		Inp_baseRisk.setText("0.25");
+		Inp_b0.setText("0");
+		Inp_b1.setText("0");
 	}
 	private void readWorldIDs(){
 		// connects to the database and reads what has been run so far. It catches any SQL exception, so it is invisible for the user if no connection is established. 
@@ -692,14 +778,18 @@ public class WorldGUIMain {
 			for (int i=0;i<worldIDList.size();i++){
 				combo_WorldID.addItem(worldIDList.get(i));
 			}
+			Object anObject = worldIDList.get(worldIDList.size() - 1);
+			combo_WorldID.setSelectedItem(anObject);
+			combo_worldIDActionAllowed = true;
 		}
 		catch(SQLException e){e.printStackTrace();}
-		combo_worldIDActionAllowed = true;
+		
 	}
-	private void readWorld(String worldID){
+	private void readWorld(WorldIDType worldID) { //String worldID){
 		Reader reader = new Reader(settings);
 		try{
-			World world = reader.readWorld(settings, worldID);
+			World world = reader.readWorld(settings, worldID.getWorldID());
+			Inp_worldname.setText(world.getworldname());
 			Inp_iterations.setText(world.getNumberOfIterations() +"");
 			Inp_sponsors.setText(world.getInitialNumberOfSponsors() +"");
 			Inp_Agencies.setText(world.getInitialNumberOfAgencies() +"");
@@ -718,6 +808,10 @@ public class WorldGUIMain {
 			Inp_moveRate.setText(world.getMoveRate()+"");
 			Inp_budgetIncrease.setText(world.getBudgetIncrease()+"");
 			Inp_baseRisk.setText(world.getBaseRisk()+"");
+			Inp_b0.setText(world.getb0() +"" );
+			Inp_b1.setText(world.getb1() +"" );
+			chckbxSponsorMoney.setSelected(world.getRespectSponsorMoney());
+			
 		}
 		catch(SQLException e){
 		infoBox (e.getLocalizedMessage(),"Reading world id error");}

@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import dk.ms.SponsorsAndAgenciesControl.Agency;
 import dk.ms.SponsorsAndAgenciesControl.Sponsor;
 import dk.ms.SponsorsAndAgenciesControl.World;
-import dk.ms.Statistics.Statistics;
 
 public class WriterFile extends SponsorsAndAgenciesWriter{
 	// TODO write result

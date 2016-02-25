@@ -16,7 +16,6 @@ public class Sponsor implements Cloneable{
 	private ArrayList<Agency> 	LAgency;
 	private double[] 			position;
 	private double 				payoff;
-	private String 				status = "";
 	private double 				previousReserve; 
 
 	// constructor	
@@ -53,7 +52,6 @@ public class Sponsor implements Cloneable{
 	public double getPayoff() 			{return payoff;}
 	public double getMoney() 			{return money;}
 	public Timestamp getCreationDate() 	{return creationDate;}
-	public String getStatus()			{return status;}
 	public Double getPrevReserve()  	{return previousReserve;}
 	
 	// simple setters	
@@ -79,7 +77,6 @@ public class Sponsor implements Cloneable{
 
 	public void addAgency(Agency agency){
 		LAgency.add(agency);
-		status = status + "agency added:" + agency.getName() + ",";
 	}
 
 	public void removeAgency(Agency agency){
@@ -93,9 +90,5 @@ public class Sponsor implements Cloneable{
 	public Object getWorldID() {
 		return worldID;
 	}
-	
-	public void clearStatus(){
-		status = "";
-	}
-
+		
 }

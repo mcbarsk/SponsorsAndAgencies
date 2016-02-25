@@ -24,10 +24,11 @@ public class TestMain {
 		double agencyRequirementNeed	= 0.92;
 		double agencyRequirementSigma	= 0.2;
 		double sightOfAgency 			= 2;
-		boolean pickRandomSponsor 		= false;
 		double moveRate					= 0.5;
 		double budgetIncrease			= 1.02;
 		double baseRisk					= 0.25;
+		double b0						= 0;
+		double b1						= 0;
 		WriteMethod writeMethod = WriteMethod.NONE;
 		// WriteMethod writeMethod = WriteMethod.TO_DATABASE;
 		// WriteMethod writeMethod = WriteMethod.TO_FILE;
@@ -63,11 +64,11 @@ public class TestMain {
 			}
 		}
 		else{
-			world = new World(numberOfIterations, initialNumberOfSponsors,initialNumberOfAgencies, 
+			world = new World("",numberOfIterations, initialNumberOfSponsors,initialNumberOfAgencies, 
 					cm, ws,sponsorSigmaFactor, sponsorMoney, respectSponsorMoney,agencyMoney,agencyMoneyReserveFactor,
 					agencySigmaFactor,agencyRequirementNeed,
 					agencyRequirementSigma,sightOfAgency,  writeMethod,am, moveRate, mm,
-					budgetIncrease,baseRisk,settings);
+					budgetIncrease,baseRisk,b0,b1,settings);
 				listener thr ; //= new listener();
 				thr = new listener();
 				thr.run();

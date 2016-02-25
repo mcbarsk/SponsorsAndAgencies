@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import dk.ms.SponsorsAndAgenciesControl.Agency;
 import dk.ms.SponsorsAndAgenciesControl.Sponsor;
 import dk.ms.SponsorsAndAgenciesControl.World;
-import dk.ms.Statistics.Statistics;
 
 /**
  * This class connects to a MySQL database and handles all database access.
@@ -29,19 +28,20 @@ public class WriterSQL extends SponsorsAndAgenciesWriter{
 	private final String AGENCY_IT_INSERT = "INSERT INTO sponsors_agencies.agency_iterations (worldID, name," +  
 			"chosenSponsor,budget,moneyNeeded," + 
 			"savings,position_x,position_y," + 
-			"payout,cutdown,iteration, percentageCut, agency_status) " +  
-			"VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)";
+			"payout,cutdown,iteration, percentageCut) " +  
+			"VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
 	private final String SPONSOR_INSERT = "INSERT INTO sponsors_agencies.sponsors (worldID, creationDate, name," + 
 			"position_x,position_y,money)" +
 			"VALUES(?,?,?,?,?,?)";
 	private final String SPONSOR_IT_INSERT = "INSERT INTO sponsors_agencies.sponsor_iterations (worldID, name," + 
-			"payoff,iteration,sponsor_status)" + 
-			"VALUES(?,?,?,?,?)";
+			"payoff,iteration)" + 
+			"VALUES(?,?,?,?)";
 	private final String WORLD_INSERT = "INSERT INTO sponsors_agencies.worlds(worldID,creationDate,initialNumberOfSponsors,"+
-			"initialNumberOfAgencies,cutDownModel,allocationMethod,worldSize,sponsorSigmaFactor,sponsorMoney,agencyMoney," +
+			"initialNumberOfAgencies,cutDownModel,allocationMethod,worldSize,sponsorSigmaFactor,sponsorMoney,respectSponsorMoney," +
+			"agencyMoney," +
 			"agencyMoneyReserveFactor,agencySigmaFactor,agencyRequirementNeed,agencyRequirementSigma,sightOfAgency," + 
-			"moveRate,numberOfIterations,baserisk, moveMethod)" +
-			"VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+			"moveRate,numberOfIterations,baserisk, b0,b1, moveMethod, worldname)" +
+			"VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 	private final String STAT_UPDATE = "UPDATE sponsors_agencies.worlds " + 
 			                           "set StatMean = ? ," + 
 			                           "StatLCV = ?,      " + 
@@ -138,16 +138,20 @@ public class WriterSQL extends SponsorsAndAgenciesWriter{
 			stmt.setString	(7, world.getWorldSize()[0] + "," + world.getWorldSize()[1]);
 			stmt.setDouble	(8, world.getSponsorSigmaFactor());
 			stmt.setDouble	(9, world.getSponsorMoney());
-			stmt.setDouble	(10, world.getAgencyMoney());
-			stmt.setInt		(11, world.getAgencyMoneyReserveFactor());
-			stmt.setDouble	(12, world.getAgencySigmaFactor());
-			stmt.setDouble	(13, world.getAgencyRequirementNeed());
-			stmt.setDouble	(14, world.getAgencyRequirementSigma());
-			stmt.setDouble	(15, world.getSightOfAgency());
-			stmt.setDouble	(16, world.getMoveRate());
-			stmt.setInt		(17, world.getNumberOfIterations());
-			stmt.setDouble	(18, world.getBaseRisk());
-			stmt.setString(19, world.getMoveMethod().name());
+			stmt.setInt     (10, world.getRespectSponsorMoney() ? 1:0);
+			stmt.setDouble	(11, world.getAgencyMoney());
+			stmt.setInt		(12, world.getAgencyMoneyReserveFactor());
+			stmt.setDouble	(13, world.getAgencySigmaFactor());
+			stmt.setDouble	(14, world.getAgencyRequirementNeed());
+			stmt.setDouble	(15, world.getAgencyRequirementSigma());
+			stmt.setDouble	(16, world.getSightOfAgency());
+			stmt.setDouble	(17, world.getMoveRate());
+			stmt.setInt		(18, world.getNumberOfIterations());
+			stmt.setDouble	(19, world.getBaseRisk());
+			stmt.setDouble	(20, world.getb0());
+			stmt.setDouble	(21, world.getb1());
+			stmt.setString	(22, world.getMoveMethod().name());
+			stmt.setString	(23, world.getworldname());
 			stmt.execute();	// the SQL is fired 
 			conn.commit();     // the data is committed. 
 
@@ -193,7 +197,6 @@ public class WriterSQL extends SponsorsAndAgenciesWriter{
 				stmt.setInt   (2,sponsor.getName());
 				stmt.setDouble(3, sponsor.getPayoff());
 				stmt.setInt(4, iteration);
-				stmt.setString(5, sponsor.getStatus());
 				stmt.addBatch();
 			}
 			stmt.executeBatch();
@@ -241,8 +244,6 @@ public class WriterSQL extends SponsorsAndAgenciesWriter{
 			stmt2.setInt    (10, cutDown);
 			stmt2.setInt    (11,iteration);
 			stmt2.setDouble(12, agency.getSavingsdiff());
-			stmt2.setString(13, agency.getStatus());
-			//stmt.setTimestamp(12, beggar.getWorldID());
 			stmt2.addBatch();
 		}
 		stmt.executeBatch();

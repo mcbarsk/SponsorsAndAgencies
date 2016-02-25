@@ -4,9 +4,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-
-import javax.xml.ws.RespectBinding;
-
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -19,6 +16,7 @@ import dk.ms.Statistics.Statistics;
 
 public class World {
 	private String 					worldID;
+	private String					worldname;
 	private Timestamp           	creationDate;
 	private int 					initialNumberOfSponsors;
 	private int 					initialNumberOfAgencies;
@@ -42,6 +40,8 @@ public class World {
 	private int						totalNumberOfAgencies 		= 0; 	// singleton to ensure new agencies get a unique number
 	private double 					budgetIncrease				= 1.02; // the idea was to increase the agency budget per iteration. Whether this is necessary must be investigated.
 	private double 					baseRisk					= 0.25; // used for calculating real risk. This is used by the funding algorithm.
+	private double 					b0							= 0; // used for calculating time based Risk, based upon an Euler formula.
+	private double 					b1							= 0; // used for calculating time based Risk, based upon an Euler formula.
 	private boolean					respectSponsorMoney;		// specifies the sponsor can't be over-allocated by more than one agency.
 	private WriteMethod				writeMethod;		// ENUM for creating the writer object.
 	private AllocationMethod		allocationMethod; // ENUM for the allocation algorithms
@@ -64,7 +64,8 @@ public class World {
 	private double 					L_skewness;
 	private double 					L_kurtosis;
 
-	public World(int numberOfIterations,
+	public World(String worldname,
+			int numberOfIterations,
 			int initialNumberOfSponsors, 
 			int initialNumberOfAgencies, 
 			CutDownModel cutDownModel,
@@ -84,6 +85,8 @@ public class World {
 			MoveMethod moveMethod,
 			double budgetIncrease,
 			double baseRisk,
+			double b0,
+			double b1,
 			Settings settings
 			){
 		// Validation
@@ -105,6 +108,7 @@ public class World {
 		LAgencies 						= new ArrayList<Agency>(); // container for agencies
 		LSponsors 						= new ArrayList<Sponsor>(); // container for sponsors
 		worldID 						= String.valueOf(UUID.randomUUID()); // generates a unique ID for the world
+		this.worldname 					= worldname;
 		Date date 						= new Date();
 		creationDate 					= new Timestamp(date.getTime()); // when is the world created
 		this.numberOfIterations			= numberOfIterations;
@@ -129,8 +133,10 @@ public class World {
 		this.writeMethod				= writeMethod;
 		this.budgetIncrease				= budgetIncrease;
 		this.baseRisk					= baseRisk;
+		this.b0							= b0;
+		this.b1							= b1;
 		this.allocationMethod			= allocationMethod;
-		switch (writeMethod){
+		switch (this.writeMethod){
 		case TO_DATABASE:
 			writer = new WriterSQL();
 			break;
@@ -149,11 +155,13 @@ public class World {
 	@Override public String toString(){return "worldID:" + worldID ;}
 	// Simple getters
 	public String getWorldID() 				{return worldID;}
+	public String getworldname()			{return worldname;}
 	public Timestamp getCreationDate() 		{return creationDate;}
 	public int getInitialNumberOfSponsors() {return initialNumberOfSponsors;}
 	public int getInitialNumberOfAgencies() {return initialNumberOfAgencies;}
 	public CutDownModel getCutDownModel() 	{return cutDownModel;}
 	public AllocationMethod getAllocationMethod(){return allocationMethod;}
+	public boolean getRespectSponsorMoney() {return respectSponsorMoney;}
 	public int[] getWorldSize() 			{return worldSize;}
 	public double getSponsorSigmaFactor() 	{return sponsorSigmaFactor;}
 	public double getSponsorMoney() 		{return sponsorMoney;}
@@ -168,6 +176,8 @@ public class World {
 	public int getNumberOfIterations() 		{return numberOfIterations;}
 	public double getBudgetIncrease() 		{return budgetIncrease;}
 	public double getBaseRisk() 			{return baseRisk;}
+	public double getb0() 					{return b0;}
+	public double getb1() 					{return b1;}
 	public double getMean() 				{return mean;}
 	public double getLcv() 					{return lcv;}
 	public double getSkewness() 			{return skewness;}
@@ -283,7 +293,7 @@ public class World {
 		// When this method terminates all relevant agencies will express whether they have been cut via the payout algorithms. 
 		for (int i=0; i < LSponsors.size();i++){
 			Sponsor sponsor = LSponsors.get(i);
-			Payout.payout(cutDownModel, sponsor, baseRisk); // private class handles the different payout models, based on the cutDownModel
+			Payout.payout(cutDownModel, sponsor, baseRisk, b0,b1); // private class handles the different payout models, based on the cutDownModel
 		}
 		//setend();
 		//log (start, end, "step4");
@@ -367,13 +377,11 @@ public class World {
 		for (int j=0;j<LSponsors.size();j++){
 			Sponsor sponsor = LSponsors.get(j); 
 			sponsor.setPayoff(0);
-			sponsor.clearStatus(); // the telltale status is cleared.
 		}
 		// 
 		for (int i=0;i<LAgencies.size();i++){
 			Agency agency = LAgencies.get(i);
 			agency.clearSavingsDifference();
-			agency.clearStatus();
 		}
 	}
 
@@ -692,7 +700,6 @@ public class World {
 			int returnValue = -1;
 			double minDistance = 99999;
 			int size = agency.getPossibleSponsors().size();
-			// TODO loyalty
 			for (int i=0; i<size;i++){
 				Sponsor sponsor = agency.getPossibleSponsors().get(i);
 				double distance = distance(sponsor, agency);
@@ -745,7 +752,7 @@ public class World {
 
 	
 	private static class Payout { // private class for calculating payout based on payment model
-		private static void payout(CutDownModel model, Sponsor sponsor, double baserisk){
+		private static void payout(CutDownModel model, Sponsor sponsor, double baserisk, double b0, double b1){
 			/* If a sponsor has sufficient money, the cutDownModel is never used. Hence the invocation of sufficientMoneyForSponsor
 			 * at the very beginning of this routine.
 			 */
@@ -763,6 +770,7 @@ public class World {
 					payoutBasedOnRisk(sponsor, baserisk);
 					break;
 				case PROBABILITY_TIME_CALCULATION:
+					payoutBasedOnRiskTime(sponsor, b0, b1);
 					break;
 				}
 			}
@@ -818,7 +826,7 @@ public class World {
 			// at baserisk > random()
 			// Afterwards all are investigated based upon baserisk compared against random
 			// for all the cutdown agencies, the payout will be: 
-			// payout = budget - (totalAgencyNeed*budget/totalcut
+			// payout = budget - (totalAgencyNeed*budget/totalcut)
 			double totalAgencyNeed = getTotalAgencyNeed(sponsor);
 			double totalSponsorMoney = sponsor.getMoney();
 			double difference = totalAgencyNeed - totalSponsorMoney;
@@ -858,6 +866,51 @@ public class World {
 
 		} // payoutBasedOnRisk
 
+		private static void payoutBasedOnRiskTime(Sponsor sponsor, double b0, double b1){
+			// finds a set of agencies, which will be cut percentage wise. 
+			// The risk is calculated based upon the time a given agency has avoided being cut, and compared against random
+			// for all the cutdown agencies, the payout will be: 
+			// payout = budget - (totalAgencyNeed*budget/totalcut)
+			double totalAgencyNeed = getTotalAgencyNeed(sponsor);
+			double totalSponsorMoney = sponsor.getMoney();
+			double difference = totalAgencyNeed - totalSponsorMoney;
+			double startDifference = difference;
+			double totalMoneyCut = 0;
+			double payoff = 0;
+			int size = sponsor.getAgencies().size();
+			Agency agency;
+			while ( Double.compare(startDifference,0) > 0){ // find the ones to be cut
+				for(int i=0;i<size;i++){
+					agency = sponsor.getAgencies().get(i);
+					if (!agency.getCutDown()){ // only inspect agencies, that hasn't already been cut in this routine
+						// a risk is calculated as random < risk, where risk = E^(b1*X + b0) / (1 + (E^(b1*X + b0))), WHERE X = number of times an agency hasn't been cut.
+						double exponent = b1*(double)agency.getUncutCount() + b0;
+						double euler = Math.exp(exponent);
+						double realRisk = euler / (1 + euler);
+						if (Double.compare(realRisk,Math.random()) > 0){ // risk is larger than the random number [0..1[
+							startDifference -= agency.getBudget();
+							totalMoneyCut += agency.getBudget();
+							agency.setCutDown(true); // the agency has been selected and is now flagged for cut-down
+							// if (Double.compare(startDifference, 0) <= 0){ i = size;}  // terminate for loop if sufficient have been found
+						}
+					}
+				}
+			}
+			for(int i=0; i< size;i++){ // then pay the cut agencies the calculated money, and pay the rest their budget
+				agency = sponsor.getAgencies().get(i);
+				if (!agency.getCutDown()){
+					payoff += agency.getBudget();
+					agency.setPayout(agency.getBudget());
+				}
+				else{
+					double payAmount = agency.getBudget() - ((totalAgencyNeed - totalSponsorMoney) *agency.getBudget()/totalMoneyCut); // percentage cut
+					payoff += payAmount;
+					agency.setPayout(payAmount);
+				}
+			}
+			sponsor.setPayoff(payoff); // finally set the amount the sponsor pays out
+
+		} // payoutBasedOnRiskTime		
 		
 		private static double calculatePercentage(Sponsor sponsor){
 			double totalAmount = 0;
