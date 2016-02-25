@@ -127,14 +127,6 @@ public class WorldGUIMain {
 		JLabel lblWorldId = new JLabel("World ID");
 
 		combo_WorldID = new JComboBox<WorldIDType>();
-		combo_WorldID.addFocusListener(new FocusAdapter() {
-			@Override
-			public void focusGained(FocusEvent arg0) {
-				if (combo_WorldID.getItemCount() == 0){
-					readWorldIDs();
-				}
-			}
-		});
 		combo_WorldID.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				if (combo_worldIDActionAllowed)
