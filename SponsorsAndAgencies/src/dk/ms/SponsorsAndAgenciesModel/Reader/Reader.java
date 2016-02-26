@@ -268,7 +268,7 @@ public class Reader {
 				rs = stmt.executeQuery();
 				while (rs.next()){
 					Object[] obj ={	rs.getInt("iteration"), 
-									rs.getInt("Average payoff"), 
+									rs.getDouble("Average payoff"), 
 									rs.getDouble("Min payoff"),
 									rs.getDouble("Max payoff"),
 									rs.getDouble("Total payoff"),

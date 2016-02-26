@@ -41,8 +41,6 @@ import java.awt.SystemColor;
 import javax.swing.UIManager;
 import net.miginfocom.swing.MigLayout;
 import javax.swing.JCheckBox;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
 

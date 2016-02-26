@@ -7,7 +7,7 @@ import javax.swing.table.AbstractTableModel;
 import dk.ms.SponsorsAndAgenciesControl.Settings;
 public class SponsorReport extends AbstractTableModel{
 	private static final long serialVersionUID = -7146990124640509030L;
-	private String[] header = {"iteration,","Average payoff", "Min payoff", "Max payoff", "Total payoff", "Total money", "# with reserve"};
+	private String[] header = {"iteration","Average payoff", "Min payoff", "Max payoff", "Total payoff", "Total money", "# with reserve"};
 	private List<Object[]> lines;
 	
 	public SponsorReport(Settings settings, String worldID){
