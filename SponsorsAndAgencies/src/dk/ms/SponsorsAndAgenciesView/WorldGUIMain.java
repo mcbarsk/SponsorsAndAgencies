@@ -44,7 +44,7 @@ import javax.swing.JCheckBox;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
 
-public class WorldGUIMain {							//Adam checks in!
+public class WorldGUIMain {							//Adam checks in! Edit 2
 
 	private JFrame frame;
 	private static JTextField Inp_iterations;
