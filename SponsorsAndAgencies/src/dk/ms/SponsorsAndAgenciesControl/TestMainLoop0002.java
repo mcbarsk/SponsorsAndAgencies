@@ -11,7 +11,7 @@ public class TestMainLoop0002 {
 	public static void main(String[] args) {
 		
 		for(int repeater : Arrays.asList(1,2,3)) {
-		for(int sponsnum : Arrays.asList(50, 200)) {		//Full: 25, 50, 100, 200 
+		for(int sponsnum : Arrays.asList(50, 200)) {		//Full: 25, 50, 100, 200. 
 		for(int agentsight : Arrays.asList(3)) {			//Full: 1,3,5,7,9
 		for(int sponsmoney : Arrays.asList(25, 50)) {				//Full: 25,50,75
 		for(Double agentneed : Arrays.asList(0.92)){	//Full: 0.92, 0.95, 0.98	
