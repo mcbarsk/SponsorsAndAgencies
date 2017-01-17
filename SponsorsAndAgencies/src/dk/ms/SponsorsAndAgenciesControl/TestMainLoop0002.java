@@ -13,22 +13,25 @@ public class TestMainLoop0002 {
 
 	public static void main(String[] args) {
 		int ite = 1;
-		for(int repeater : Arrays.asList(1)) {		
+		for(int repeater : Arrays.asList(1, 2, 3)) {		
 		for(int sponsnum : Arrays.asList(25, 50, 100, 200)) {		//Full: 25, 50, 100, 200. 
 		for(int agentsight : Arrays.asList(1,3,5,7,9)) {			//Full: 1,3,5,7,9
 		for(int sponsmoney : Arrays.asList(25,50,75)) {				//Full: 25,50,75
 		for(Double agentneed : Arrays.asList(0.92, 0.95, 0.98)){	//Full: 0.92, 0.95, 0.98	
 		for(Double moverat : Arrays.asList(0.25, 0.50, 0.75)) {
-
-		int numberOfIterations			= 1000;
+		for(Double baserisk : Arrays.asList(0.25)) { 				//Full: 0.2, 0.4, 0.6, 0.8	(Default: 0.25)			
+		for(Double b1_num : Arrays.asList(-0.5, -0.2)) {			//First run -0.5 and -0,2 with b0 set to 1 (below), and then 0.5 and 0.2 with b0 set to -1
+		
+		int numberOfIterations			= 121;
 		int initialNumberOfSponsors 	= sponsnum;
 		int initialNumberOfAgencies 	= 100;
-		 CutDownModel cm 				= CutDownModel.SAME_PERCENTAGE_RATE;
+		// CutDownModel cm 				= CutDownModel.SAME_PERCENTAGE_RATE;
 		// CutDownModel cm 				= CutDownModel.PROBABILITY_CALCULATION;
+		 CutDownModel cm				= CutDownModel.PROBABILITY_TIME_CALCULATION;
 		int[] ws 						= {5,5};
 		double sponsorSigmaFactor 		= 6; 
 		double sponsorMoney 			= sponsmoney;
-		boolean respectSponsorMoney     = false;
+		boolean respectSponsorMoney     = true;
 		double agencyMoney 				= 10 ;
 		int agencyMoneyReserveFactor 	= 5;
 		double agencySigmaFactor 		= 6;
@@ -37,14 +40,14 @@ public class TestMainLoop0002 {
 		double sightOfAgency 			= agentsight;
 		double moveRate					= moverat;
 		double budgetIncrease			= 1.00;
-		double baseRisk					= 0.25;
-		double b0						= 0;
-		double b1						= 0;
-		//WriteMethod writeMethod = WriteMethod.NONE;
-	    WriteMethod writeMethod = WriteMethod.TO_DATABASE;
-		// WriteMethod writeMethod = WriteMethod.TO_FILE;
+		double baseRisk					= baserisk;
+		double b0						= 1;
+		double b1						= b1_num;
+		WriteMethod writeMethod = WriteMethod.NONE;
+	    //WriteMethod writeMethod = WriteMethod.TO_DATABASE;
+		//WriteMethod writeMethod = WriteMethod.TO_FILE;
 		AllocationMethod am = AllocationMethod.CLOSEST_DISTANCE;
-		MoveMethod mm       = MoveMethod.PERCENTAGE_OF_DISTANCE;
+		MoveMethod mm       = MoveMethod.REAL_DISTANCE;				//REAL_DISTANCE or PERCENTAGE_OF_DISTANCE
 	
 				
 		 Settings settings = new Settings();
@@ -98,13 +101,15 @@ public class TestMainLoop0002 {
 		//		world.removeExhaustedAgencies();
 		//		world.generateNewAgencies(); 
 		System.out.println("\r\n" +
-						   "Current Iteration: " + ite + " out of 540" + "\r\n" +
+						   "Current Iteration: " + ite + " out of 3240(2)" + "\r\n" +
 						   "Current time: " + LocalDateTime.now() + "\r\n" +
 						   "Current level of Move Rate: " + moverat + "\r\n" +
 						   "Current level of Agent Need: " + agentneed + "\r\n" +
 						   "Current level of Sponsor Money: " + sponsmoney + "\r\n" +
 						   "Current level of Agency Sight: " + agentsight + "\r\n" +
 						   "Current level of Number of Sponsors: " + sponsnum + "\r\n" +
+						   "Current level of Baserisk: " + baserisk + "\r\n" +
+						   "Current level of b0: " + b0 + "and b1: " + b1 + "\r\n" +
 						   "Current level of Robustness check: " + repeater);
 		ite++;
 	}					//MY LOOP BEGIN!!!    Robustness check (Repeater)
@@ -112,6 +117,8 @@ public class TestMainLoop0002 {
 	}					//					  Agent Need
 	}					//					  Sponsor Money
 	}					//					  Agency Sight
+	}					//				      Baserisk
+	}
 	}					// My Loop END!!!	  Initial number of Sponsors
 		
 	}

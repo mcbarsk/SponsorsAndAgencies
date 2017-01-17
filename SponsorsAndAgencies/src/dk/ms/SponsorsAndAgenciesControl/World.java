@@ -199,7 +199,9 @@ public class World {
 			allocateSponsor();
 			allocateFunding();
 			spendBudget();
-			storeStatisticData();
+			if (i > 39) {
+				storeStatisticData();
+			}
 			write(i);
 			removeExhaustedAgencies();
 			generateNewAgencies();
